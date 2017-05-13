@@ -1,0 +1,8 @@
+# dependencies
+/node_modules
+
+# IDEs and editors
+/.vscode
+/.idea
+
+test.js
