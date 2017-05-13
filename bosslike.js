@@ -1,6 +1,5 @@
 "use strict";
 const webdriver = require("selenium-webdriver");
-const chrome    = require("selenium-webdriver/chrome");
 const config    = require("./config");
 const InstagramClicker = require("./instagramclicker");
 
@@ -9,27 +8,14 @@ let until = webdriver.until;
 
 module.exports = class Bosslike {
     
-    constructor() {
+    constructor(driver) {
+        
+        this.driver = driver;
+
         this.stopWords = [
             'гель', 'sex', 'porn', 'порн', 'секс'
         ];
-    }
 
-    connectBrowser() {
-        
-        let options = new chrome.Options();
-        
-        options.setChromeBinaryPath(config.chrome_options.binaryPath);
-        options.addArguments('user-data-dir=' + config.chrome_options.profile);
-        options.addArguments('disable-session-crashed-bubble');
-        options.addArguments('disable-infobars');
-
-        this.driver = new webdriver.Builder()
-            .forBrowser('chrome')
-            .setChromeOptions(options)
-            .build();
-
-        return this.driver;    
     }
 
     async openVK(type) {
@@ -155,13 +141,13 @@ module.exports = class Bosslike {
         if (this.social === 'vk') {
         }
         else if (this.social === 'instagram') {
-            socialClicker = new InstagramClicker(this.driver, mainWindow);
+            socialClicker = new InstagramClicker(this.driver, this.mainWindow);
         }
         
         let result = await socialClicker.click(text);
   
         await this.closeTaskWindow();
-        await this.driver.switchTo().window(mainWindow);
+        await this.driver.switchTo().window(this.mainWindow);
 
         return result;
 
