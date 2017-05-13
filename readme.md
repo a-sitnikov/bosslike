@@ -1,1 +1,1 @@
-Automated complining tasks on bosslike.ru
+Automated completing tasks on bosslike.ru
