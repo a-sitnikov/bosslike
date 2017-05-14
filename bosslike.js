@@ -38,6 +38,26 @@ module.exports = class Bosslike {
         this.driver.wait(condition, 2000);
     }
 
+     async waitForLogin() {
+        
+        let _this = this;
+        let condition = new webdriver.Condition('', async function (webdriver) {
+            let elems = await _this.driver.findElements(By.xpath('//*[text()="Вход"]'));
+            return elems.length === 0;
+        });
+        this.driver.wait(condition, 60000);
+    }
+    
+      async waitForTaskToBeChecked() {
+        
+        let _this = this;
+        let condition = new webdriver.Condition('', async function (webdriver) {
+            let elems = await _this.driver.findElements(By.xpath('//*[contains(text(), "Выполнение не подтверждено")]'));
+            return elems.length === 0;
+        });
+        this.driver.wait(condition, 10000);
+    }
+    
     isBlocked(text) {
         for (let word of this.stopWords) {
             if (text.toLowerCase().search(word) !== -1)
@@ -148,6 +168,8 @@ module.exports = class Bosslike {
   
         await this.closeTaskWindow();
         await this.driver.switchTo().window(this.mainWindow);
+
+        this.waitForTaskToBeChecked();
 
         return result;
 
