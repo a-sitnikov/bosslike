@@ -31,6 +31,12 @@ module.exports = class InstagramClicker {
     
     async click(text) {
 
+        let handles = await this.driver.getAllWindowHandles();
+        if (handles.length === 1) {
+            console.log("Window already closed");
+            return false;
+        }
+
         if (!this.waitForPageToBeEnabled()) {
             console.log("Waiting for page failed");
             return false;
