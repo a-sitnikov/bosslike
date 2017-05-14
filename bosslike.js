@@ -9,13 +9,7 @@ let until = webdriver.until;
 module.exports = class Bosslike {
     
     constructor(driver) {
-        
         this.driver = driver;
-
-        this.stopWords = [
-            'гель', 'sex', 'porn', 'порн', 'секс'
-        ];
-
     }
 
     async openVK(type) {
@@ -42,10 +36,10 @@ module.exports = class Bosslike {
         
         let _this = this;
         let condition = new webdriver.Condition('', async function (webdriver) {
-            let elems = await _this.driver.findElements(By.xpath('//*[text()="Вход"]'));
+            let elems = await _this.driver.findElements(By.xpath('//a[text()="Вход"]'));
             return elems.length === 0;
         });
-        this.driver.wait(condition, 60000);
+        this.driver.wait(condition, config.PAUSE.WAIT_FOR_LOGIN);
     }
     
       async waitForTaskToBeChecked() {
@@ -56,14 +50,6 @@ module.exports = class Bosslike {
             return elems.length === 0;
         });
         this.driver.wait(condition, 10000);
-    }
-    
-    isBlocked(text) {
-        for (let word of this.stopWords) {
-            if (text.toLowerCase().search(word) !== -1)
-                return true;
-        }
-        return false;
     }
 
     async getTasksAndCompleteFirst() {
@@ -78,7 +64,7 @@ module.exports = class Bosslike {
             let text = await elem.getText();
             text = text.replace(new RegExp('\n', 'g'), ' ');
             
-            if (this.isBlocked(text)) {
+            if (config.isBlocked(text)) {
                 console.log("Blocked title: " + text);
                 continue;
             }
@@ -144,7 +130,14 @@ module.exports = class Bosslike {
         */
         let loc = await button.getLocation();
         await this.driver.executeScript('return window.scrollTo(' + (loc.x - 350) + ',' + (loc.y - 350) + ');');
-        await button.click();
+
+        try {
+            await button.click();
+        } catch(e) {
+            console.log("Failed to click task button");
+            console.log(e);
+            return false;
+        }   
         await config.sleep(config.PAUSE.AFTER_TASK_CLICK);
         
         console.log("" + taskId + ", " + text);
@@ -165,11 +158,27 @@ module.exports = class Bosslike {
         }
         
         let result = await socialClicker.click(text);
-  
-        await this.closeTaskWindow();
-        await this.driver.switchTo().window(this.mainWindow);
+        
+        try {
+            await this.closeTaskWindow();
+        } catch(e) {
+            console.log("Failed to close task window");
+            console.log(e);
+        }    
+        
+        try {
+            await this.driver.switchTo().window(this.mainWindow);
+        } catch(e) {
+            console.log("Can't switch to main window");
+            console.log(e);
+        }    
 
-        this.waitForTaskToBeChecked();
+        try {
+            this.waitForTaskToBeChecked();
+        } catch(e) {
+            console.log("waitForTaskToBeChecked");
+            console.log(e);
+        }    
 
         return result;
 

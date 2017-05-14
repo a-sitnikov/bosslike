@@ -5,7 +5,8 @@ exports.PAUSE = {
     AFTER_FALSE_TASK: 1000,
     AFTER_JOIN_CLICK: 3000,
     AFTER_TASK_COMPLETE: 3000,
-    MAXWAIT_FOR_PROTECT: 100000
+    MAXWAIT_FOR_PROTECT: 100000,
+    WAIT_FOR_LOGIN: 60000
 };
 
 exports.chrome_options = {
@@ -13,10 +14,21 @@ exports.chrome_options = {
     "profile": "C:/tmp/chrome"
 };
 
-function sleep(par) {
+exports.sleep = function (par) {
     return new Promise((resolve) => {
         setTimeout(() => resolve(par), par);
     });
 }
 
-exports.sleep = sleep;
+let stopWords = [
+    'гель', 'sex', 'porn', 'порн', 'секс'
+];
+exports.stopWords = stopWords;
+    
+exports.isBlocked = function(text) {
+    for (let word of stopWords) {
+        if (text.toLowerCase().search(word) !== -1)
+            return true;
+    }
+    return false;
+}

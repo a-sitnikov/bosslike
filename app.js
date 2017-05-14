@@ -27,7 +27,7 @@ async function run() {
     let driver = connectBrowser();
     let bosslike = new Bosslike(driver);
 
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 100; i++) {
         
         if (i % 10 === 0) {
             console.log(i, (new Date).toISOString());
@@ -35,8 +35,22 @@ async function run() {
             console.log(i);
         }
         bosslike.openInstagram('like');
-        bosslike.waitForLogin();
-        bosslike.waitForTasksToBeLoaded();
+        
+        try {
+            bosslike.waitForLogin();
+        } catch(e) {
+            console.log("Login not perfomed");
+            console.log(e);
+            return;
+        }   
+
+        try {
+            bosslike.waitForTasksToBeLoaded();
+        } catch(e) {
+            console.log("Tasks not loaded");
+            console.log(e);
+            continue;
+        }   
 
         await bosslike.getTasksAndCompleteFirst();
         await config.sleep(config.PAUSE.AFTER_TASK_COMPLETE);
