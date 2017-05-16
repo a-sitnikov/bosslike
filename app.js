@@ -5,12 +5,19 @@ const chrome    = require("selenium-webdriver/chrome");
 const Bosslike = require("./bosslike");
 const config = require("./config");
 
+let args = process.argv.splice(2);
+let profile = args[0];
+if (!profile) {
+    profile = config.chrome_options.profile;
+}
+let count = parseInt(args[1]);
+
 function connectBrowser() {
     
     let options = new chrome.Options();
     
     options.setChromeBinaryPath(config.chrome_options.binaryPath);
-    options.addArguments('user-data-dir=' + config.chrome_options.profile);
+    options.addArguments('user-data-dir=' + profile);
     options.addArguments('disable-session-crashed-bubble');
     options.addArguments('disable-infobars');
 
@@ -27,7 +34,11 @@ async function run() {
     let driver = connectBrowser();
     let bosslike = new Bosslike(driver);
 
-    for (let i = 0; i < 100; i++) {
+    if (count === 0) {
+        bosslike.openInstagram('like');        
+    }
+ 
+    for (let i = 0; i < count; i++) {
         
         if (i % 10 === 0) {
             console.log(i, (new Date).toISOString());
@@ -56,8 +67,11 @@ async function run() {
         await config.sleep(config.PAUSE.AFTER_TASK_COMPLETE);
     }   
 
-    driver.quit();
-    console.log('Complete');
+    if (count > 0) {
+        driver.quit();
+        console.log('Complete');
+    }
+
 };
 
 run();

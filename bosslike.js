@@ -36,18 +36,21 @@ module.exports = class Bosslike {
         
         let _this = this;
         let condition = new webdriver.Condition('', async function (webdriver) {
-            let elems = await _this.driver.findElements(By.xpath('//a[text()="Вход"]'));
-            return elems.length === 0;
+            let elems = await _this.driver.findElements(By.xpath('//div[@class="task task-new"]'));
+            //let elems = await _this.driver.findElements(By.xpath('//a[text()="Вход"]'));
+            return elems.length !== 0;
         });
         this.driver.wait(condition, config.PAUSE.WAIT_FOR_LOGIN);
+        //this.driver.wait(until.elementIsVisible(By.xpath("//div[@class='task task-new']")));
     }
     
       async waitForTaskToBeChecked() {
         
         let _this = this;
         let condition = new webdriver.Condition('', async function (webdriver) {
-            let elems = await _this.driver.findElements(By.xpath('//*[contains(text(), "Выполнение не подтверждено")]'));
-            return elems.length === 0;
+            let elems1 = await _this.driver.findElements(By.xpath('//*[contains(text(), "Выполнение не подтверждено")]'));
+            let elems2 = await _this.driver.findElements(By.xpath('//*[contains(text(), "задание уже выполнено")]'));
+            return elems1.length === 0 && elems2.length === 0;
         });
         this.driver.wait(condition, 10000);
     }
@@ -132,6 +135,14 @@ module.exports = class Bosslike {
         await this.driver.executeScript('return window.scrollTo(' + (loc.x - 350) + ',' + (loc.y - 350) + ');');
 
         try {
+            this.waitForTaskToBeChecked();
+        } catch(e) {
+            console.log("Waiting for task to be checked failed");
+            console.log(e);
+            return false;
+        }    
+        
+        try {
             await button.click();
         } catch(e) {
             console.log("Failed to click task button");
@@ -170,13 +181,6 @@ module.exports = class Bosslike {
             await this.driver.switchTo().window(this.mainWindow);
         } catch(e) {
             console.log("Can't switch to main window");
-            console.log(e);
-        }    
-
-        try {
-            this.waitForTaskToBeChecked();
-        } catch(e) {
-            console.log("waitForTaskToBeChecked");
             console.log(e);
         }    
 
