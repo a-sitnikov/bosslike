@@ -39,36 +39,23 @@ module.exports = class InstagramClicker {
         }        
         return false
     }
-    
-    async click(text) {
 
-        if (await this.windowClosed()) {
-            console.log("Window already closed");
-            return false;
-        }
-
-        if (!this.waitForPageToBeEnabled()) {
-            console.log("Waiting for page failed");
-            return false;
-        }    
-
-        if (await this.windowClosed()) {
-            console.log("Window already closed");
-            return false;
-        }
+    async unsubscribe() {
         
+        //this.driver.get(this.url);
+             
         let elemPaths = [];
         let elemPathsAlreadyDone = [];
+        
+        elemPaths.push(By.xpath('//button[text()="Following"]'));
+        elemPathsAlreadyDone.push(By.xpath('//button[text()="Follow"]'));
+
+        let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths);
+        return result;
+     }
     
-         if (text.search('Лайкнуть') === 0) {
-            
-            elemPathsAlreadyDone.push(By.xpath('//span[text()="Unlike"]'));
-            elemPathsAlreadyDone.push(By.xpath('//*[contains(text(), "Sorry, this page")]'));
-
-            elemPaths.push(By.xpath('//span[text()="Like"]'));
-
-         }
-
+    async fimdElemAndClick(elemPathsAlreadyDone, elemPaths){
+        
         for (let path of elemPathsAlreadyDone) {
 
             try {
@@ -99,7 +86,7 @@ module.exports = class InstagramClicker {
              }  
 
         }
-
+        
         let result = null;
         if (currElem) {
             
@@ -126,7 +113,57 @@ module.exports = class InstagramClicker {
             console.log('no element');
             result = false;
         }
+    
+        return result;
 
+    }
+    
+    setAction(text) {
+        if (text.search('Лайкнуть') === 0) {
+            this.action = 'like';
+        } else if (text.search('Подписаться') === 0) {
+            this.action = 'subscribe';
+        }    
+    }
+
+    async perfomAction() {
+
+        if (await this.windowClosed()) {
+            console.log("Window already closed");
+            return false;
+        }
+
+        if (!this.waitForPageToBeEnabled()) {
+            console.log("Waiting for page failed");
+            return false;
+        }    
+
+        if (await this.windowClosed()) {
+            console.log("Window already closed");
+            return false;
+        }
+        
+        this.url = await this.driver.getCurrentUrl();
+        let elemPaths = [];
+        let elemPathsAlreadyDone = [];
+        let acrion;
+    
+        if (this.action === 'like') {
+            
+             elemPathsAlreadyDone.push(By.xpath('//span[text()="Unlike"]'));
+             elemPathsAlreadyDone.push(By.xpath('//*[contains(text(), "Sorry, this page")]'));
+ 
+             elemPaths.push(By.xpath('//span[text()="Like"]'));
+ 
+        } else if (this.action === 'subscribe') {
+
+             elemPathsAlreadyDone.push(By.xpath('//button[text()="Following"]'));
+             elemPaths.push(By.xpath('//button[text()="Follow"]'));
+        }    
+
+        if (!this.action) return false;
+        
+        let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths);
         return result;
 
     }

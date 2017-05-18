@@ -5,6 +5,7 @@ const InstagramClicker = require("./instagramclicker");
 
 let By = webdriver.By;
 let until = webdriver.until;
+let Key = webdriver.Key;
 
 module.exports = class Bosslike {
     
@@ -12,6 +13,10 @@ module.exports = class Bosslike {
         this.driver = driver;
     }
 
+    async open() {
+        await this.driver.get(`http://bosslike.ru/`);
+    }
+    
     async openVK(type) {
         this.social = 'vk';
         await this.driver.get(`http://bosslike.ru/tasks/vkontakte/${type}/`);
@@ -33,15 +38,12 @@ module.exports = class Bosslike {
     }
 
      async waitForLogin() {
-        
         let _this = this;
         let condition = new webdriver.Condition('', async function (webdriver) {
-            let elems = await _this.driver.findElements(By.xpath('//div[@class="task task-new"]'));
-            //let elems = await _this.driver.findElements(By.xpath('//a[text()="Вход"]'));
+            let elems = await _this.driver.findElements(By.xpath('//a[@class="navbar-brand"]'));
             return elems.length !== 0;
         });
         this.driver.wait(condition, config.PAUSE.WAIT_FOR_LOGIN);
-        //this.driver.wait(until.elementIsVisible(By.xpath("//div[@class='task task-new']")));
     }
     
       async waitForTaskToBeChecked() {
@@ -72,7 +74,20 @@ module.exports = class Bosslike {
                 continue;
             }
             
-            let result = await this.clickTask(elem, text, this.currentSocial);
+            this.socialClicker = null;
+            if (this.social === 'vk') {
+            }
+            else if (this.social === 'instagram') {
+                this.socialClicker = new InstagramClicker(this.driver, this.mainWindow);
+            }
+
+            this.socialClicker.setAction(text);
+            if (!this.socialClicker.action) {
+                console.log(text + ', unsupported');
+                continue;
+            }    
+
+            let result = await this.clickTask(elem, text);
 
             if (result) {
                 break;
@@ -109,7 +124,7 @@ module.exports = class Bosslike {
         
     }
 
-    async clickTask(elem, text, social) {
+    async clickTask(elem, text) {
         
         let subElems = await elem.findElements(By.xpath('.//button'));
         if (subElems.length === 0) {
@@ -161,14 +176,7 @@ module.exports = class Bosslike {
             return false;
         }
     
-        let socialClicker = null;
-        if (this.social === 'vk') {
-        }
-        else if (this.social === 'instagram') {
-            socialClicker = new InstagramClicker(this.driver, this.mainWindow);
-        }
-        
-        let result = await socialClicker.click(text);
+        let result = await this.socialClicker.perfomAction();
         
         try {
             await this.closeTaskWindow();
@@ -182,9 +190,34 @@ module.exports = class Bosslike {
         } catch(e) {
             console.log("Can't switch to main window");
             console.log(e);
-        }    
+        }  
+
+        if (result && this.socialClicker.action === 'subscribe') {
+            await this.unsubscribe();
+        }  
 
         return result;
 
+    }
+
+    async unsubscribe(){
+        
+        await this.driver.executeScript(`window.open()`);
+        console.log('unsubscribe: ' + this.socialClicker.url);
+
+        let isSwithed = this.swithToTaskWindow();
+        if (isSwithed) {
+            await this.driver.get(this.socialClicker.url);
+            await this.socialClicker.unsubscribe();
+        }
+        
+        try {
+            await this.closeTaskWindow();
+        } catch(e) {
+            console.log("Failed to close unsubscribe window");
+            console.log(e);
+        }  
+        
+        await this.driver.switchTo().window(this.mainWindow);
     }
 }
