@@ -15,8 +15,10 @@ if (!profile) {
 }
 let count = parseInt(args[1]);
 
-let arr = profile.split('/');
-const db = new sqlite3.Database('bosslike_' + arr[arr.length - 1] + '.sqlite3');
+let arr = profile.split(new RegExp('\\\\|\\/', 'g'));
+let dbname = 'bosslike_' + arr[arr.length - 1] + '.sqlite3';
+console.log(dbname);
+const db = new sqlite3.Database(dbname);
 
 function connectBrowser() {
     

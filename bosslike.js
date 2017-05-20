@@ -276,6 +276,7 @@ module.exports = class Bosslike {
         }  
 
         if (result && this.socialClicker.action === 'subscribe') {
+            await config.sleep(config.PAUSE.BEFORE_UNSUBSCRIBE);
             await this.unsubscribe();
         }  
 
