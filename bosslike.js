@@ -3,14 +3,15 @@ const webdriver = require("selenium-webdriver");
 const config    = require("./config");
 const InstagramClicker = require("./instagramclicker");
 
-let By = webdriver.By;
-let until = webdriver.until;
-let Key = webdriver.Key;
+const By    = webdriver.By;
+const until = webdriver.until;
+const Key   = webdriver.Key;
 
 module.exports = class Bosslike {
     
-    constructor(driver) {
+    constructor(driver, dbLog) {
         this.driver = driver;
+        this.dbLog = dbLog;
     }
 
     async open() {
@@ -61,7 +62,7 @@ module.exports = class Bosslike {
         
         this.mainWindow = await this.driver.getWindowHandle();
 
-        let elements = await this.driver.findElements(By.xpath("//div[@class='task task-new']"));
+        let elements = await this.driver.findElements(By.xpath("//div[contains(@class, 'task_item')]"));
         let elem = null;
         let result = false;
         for (let elem of elements) {
@@ -69,10 +70,12 @@ module.exports = class Bosslike {
             let text = await elem.getText();
             text = text.replace(new RegExp('\n', 'g'), ' ');
             
+            /*
             if (config.isBlocked(text)) {
                 console.log("Blocked title: " + text);
                 continue;
             }
+            */
             
             this.socialClicker = null;
             if (this.social === 'vk') {
@@ -87,8 +90,8 @@ module.exports = class Bosslike {
                 continue;
             }    
 
-            let result = await this.clickTask(elem, text);
-
+            let result = await this.clickTask(elem, text, '');
+ 
             if (result) {
                 break;
             }
@@ -124,9 +127,18 @@ module.exports = class Bosslike {
         
     }
 
-    async clickTask(elem, text) {
+    async scrollToElement(elem) {
+        try {
+            let loc = await elem.getLocation();
+            await this.driver.executeScript('return window.scrollTo(' + (loc.x - 350) + ',' + (loc.y - 350) + ');');        
+        } catch(e) {
+            console.log("Can't scroll to elem");
+        }    
+    }
+
+    async clickTask(taskElem, text) {
         
-        let subElems = await elem.findElements(By.xpath('.//button'));
+        let subElems = await taskElem.findElements(By.xpath('.//button'));
         if (subElems.length === 0) {
             console.log(text, subElems);
             console.log('Не найдено кнопки');
@@ -139,6 +151,17 @@ module.exports = class Bosslike {
             return false;
         
         let taskId = await button.getAttribute('data-task-id');
+
+        let taskParams = await this.dbLog.getTaskParams(taskId);
+        if (taskParams) {
+            let now = new Date;
+            let date = new Date(taskParams.date*1000);
+            let mins = 10;
+            if (now - date < mins * 60 * 1000) {
+                console.log('' + taskId + ', ' + text + ', skipped. Time left: ' + Math.round((now - date) /1000));
+                return false;
+            }
+        }
         /*
         let isBlockedTask = await dbLog.isBlocked(taskId);
         if (isBlockedTask) {
@@ -146,37 +169,71 @@ module.exports = class Bosslike {
             return false;
         }
         */
-        let loc = await button.getLocation();
-        await this.driver.executeScript('return window.scrollTo(' + (loc.x - 350) + ',' + (loc.y - 350) + ');');
+        let result = true;
+        await this.scrollToElement(button);
 
         try {
             this.waitForTaskToBeChecked();
         } catch(e) {
             console.log("Waiting for task to be checked failed");
             console.log(e);
-            return false;
+            result = false;
         }    
         
-        try {
-            await button.click();
-        } catch(e) {
-            console.log("Failed to click task button");
-            console.log(e);
-            return false;
-        }   
-        await config.sleep(config.PAUSE.AFTER_TASK_CLICK);
-        
-        console.log("" + taskId + ", " + text);
+        if (result) {
+            try {
+                await button.click();
+            } catch(e) {
+                console.log("Failed to click task button");
+                console.log(e);
+                result = false;
+            }   
+        }
 
-        let isSwithed = this.swithToTaskWindow();
+        let comment = '';
+        if (result) {
 
-        if (!isSwithed) {
-            console.log("Can't switch window");
-            await config.sleep(config.PAUSE.AFTER_FALSE_TASK);
-            return false;
+            if (this.socialClicker.action === 'comment') {
+                comment = await this.getComment(taskElem, taskId);
+                if (comment) {
+                    let btnElems = await taskElem.findElements(By.xpath('.//button[text()="Оставить комментарий"]'));
+                    if (btnElems.length !== 0) {
+
+                        let bntComment = btnElems[0];
+                        await this.scrollToElement(bntComment);
+                        await config.sleep(500);
+                        try {
+                            await bntComment.click();
+                        } catch(e) {
+                            console.log("Can't click Comment button");
+                            console.log(e);
+                        }  
+                    } else {
+                        console.log('No button: Оставить комментарий');
+                        result = false;
+                    }
+                } else {
+                    console.log("No comment: " + taskId);
+                    result = false;
+                }     
+            }
+        }
+
+        if (result) {
+            await config.sleep(config.PAUSE.AFTER_TASK_CLICK);
+            
+            console.log("" + taskId + ", " + text + ', ' + comment);
+
+            let isSwithed = this.swithToTaskWindow();
+
+            if (!isSwithed) {
+                console.log("Can't switch window");
+                await config.sleep(config.PAUSE.AFTER_FALSE_TASK);
+                result = false;
+            }
         }
     
-        let result = await this.socialClicker.perfomAction();
+        result = await this.socialClicker.doAction(comment);
         
         try {
             await this.closeTaskWindow();
@@ -195,6 +252,10 @@ module.exports = class Bosslike {
         if (result && this.socialClicker.action === 'subscribe') {
             await this.unsubscribe();
         }  
+
+        if (this.socialClicker.action === 'comment') {
+            this.dbLog.addTask(taskId, result);
+        }    
 
         return result;
 
@@ -220,4 +281,34 @@ module.exports = class Bosslike {
         
         await this.driver.switchTo().window(this.mainWindow);
     }
+
+    async getComment(taskElem, taskId) {
+        
+        let _this = this;
+        let condition = new webdriver.Condition('', async function (webdriver) {
+            let elems = await taskElem.findElements(By.xpath('.//div[@class="form-group comment-place"]'));
+            return elems.length !== 0;
+        });
+        this.driver.wait(condition, 1000);
+
+        let elems = await taskElem.findElements(By.xpath('.//*[contains(text(), "Напишите свой осознанный комментарий")]'));
+        if (elems.length !== 0) {
+            return 'Класс';
+        }
+
+        elems = await this.driver.findElements(By.xpath(`//*[@id="taskComment${taskId}"]`));
+        if (elems.length !== 0) {
+            try {
+                let comment = await elems[0].getAttribute("value");
+                return comment;
+            } catch(e) {
+                console.log("Can't get comment");
+                console.log(e);
+                return '';
+            }    
+        }
+
+        return '';    
+    
+   }
 }

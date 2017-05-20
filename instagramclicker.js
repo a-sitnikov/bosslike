@@ -54,7 +54,7 @@ module.exports = class InstagramClicker {
         return result;
      }
     
-    async fimdElemAndClick(elemPathsAlreadyDone, elemPaths){
+    async fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment){
         
         for (let path of elemPathsAlreadyDone) {
 
@@ -99,7 +99,12 @@ module.exports = class InstagramClicker {
             }    
         
             try {
-                await currElem.click();
+                if (this.action === 'comment') {
+                    await currElem.sendKeys(comment);
+                    await currElem.submit();
+                } else {
+                    await currElem.click();
+                }    
                 result = true;
                 console.log('Done');
                 await config.sleep(config.PAUSE.AFTER_JOIN_CLICK);
@@ -123,10 +128,12 @@ module.exports = class InstagramClicker {
             this.action = 'like';
         } else if (text.search('Подписаться') === 0) {
             this.action = 'subscribe';
+        } else if (text.search('Оставить комментарий') === 0) {
+            this.action = 'comment';
         }    
     }
 
-    async perfomAction() {
+    async doAction(comment) {
 
         if (await this.windowClosed()) {
             console.log("Window already closed");
@@ -159,11 +166,16 @@ module.exports = class InstagramClicker {
 
              elemPathsAlreadyDone.push(By.xpath('//button[text()="Following"]'));
              elemPaths.push(By.xpath('//button[text()="Follow"]'));
+
+        } else if (this.action === 'comment') {  
+             
+             elemPaths.push(By.xpath('//input[@placeholder="Add a comment…"]'));
+
         }    
 
         if (!this.action) return false;
         
-        let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths);
+        let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment);
         return result;
 
     }

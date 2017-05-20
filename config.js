@@ -6,7 +6,7 @@ exports.PAUSE = {
     AFTER_JOIN_CLICK: 3000,
     AFTER_TASK_COMPLETE: 5000,
     MAXWAIT_FOR_PROTECT: 100000,
-    WAIT_FOR_LOGIN: 60000
+    WAIT_FOR_LOGIN: 100000
 };
 
 exports.chrome_options = {

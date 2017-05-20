@@ -3,7 +3,11 @@ const webdriver = require("selenium-webdriver");
 const chrome    = require("selenium-webdriver/chrome");
 
 const Bosslike = require("./bosslike");
-const config = require("./config");
+const config   = require("./config");
+const DBLog    = require('./dblog');
+
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database('bosslike.sqlite3');
 
 let args = process.argv.splice(2);
 let profile = args[0];
@@ -32,7 +36,8 @@ function connectBrowser() {
 async function run() {
     
     let driver = connectBrowser();
-    let bosslike = new Bosslike(driver);
+    let dbLog = new DBLog(db);
+    let bosslike = new Bosslike(driver, dbLog);
     bosslike.openInstagram('all');     
     try {
         bosslike.waitForLogin();
@@ -63,8 +68,9 @@ async function run() {
         await config.sleep(config.PAUSE.AFTER_TASK_COMPLETE);
     }   
 
+    dbLog.close();
     if (count > 0) {
-        driver.quit();
+        //driver.quit();
         console.log('Complete');
     }
 
