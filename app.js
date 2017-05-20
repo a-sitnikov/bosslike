@@ -7,7 +7,6 @@ const config   = require("./config");
 const DBLog    = require('./dblog');
 
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('bosslike.sqlite3');
 
 let args = process.argv.splice(2);
 let profile = args[0];
@@ -15,6 +14,9 @@ if (!profile) {
     profile = config.chrome_options.profile;
 }
 let count = parseInt(args[1]);
+
+let arr = profile.split('/');
+const db = new sqlite3.Database('bosslike_' + arr[arr.length - 1] + '.sqlite3');
 
 function connectBrowser() {
     

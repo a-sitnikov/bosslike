@@ -12,6 +12,7 @@ module.exports = class Bosslike {
     constructor(driver, dbLog) {
         this.driver = driver;
         this.dbLog = dbLog;
+        this.skippedTasks = new Map;
     }
 
     async open() {
@@ -51,9 +52,15 @@ module.exports = class Bosslike {
         
         let _this = this;
         let condition = new webdriver.Condition('', async function (webdriver) {
-            let elems1 = await _this.driver.findElements(By.xpath('//*[contains(text(), "Выполнение не подтверждено")]'));
-            let elems2 = await _this.driver.findElements(By.xpath('//*[contains(text(), "задание уже выполнено")]'));
-            return elems1.length === 0 && elems2.length === 0;
+
+            let xpathArr = [
+                '//*[contains(text(), "Выполнение не подтверждено")]',
+                '//*[contains(text(), "задание уже выполнено")]',
+                '//*[contains(text(), "задания не существует")]'
+                ];
+
+            let elems = await _this.driver.findElements(By.xpath(xpathArr.join(' | ')));
+            return elems === null || elems.length === 0;
         });
         this.driver.wait(condition, 10000);
     }
@@ -136,6 +143,22 @@ module.exports = class Bosslike {
         }    
     }
 
+    async hideTask(taskId, taskElem) {
+
+        let elems = await taskElem.findElements(By.xpath('.//*[contains(text(), "Скрыть")]'));
+        if (elems.length > 0) {
+            try {
+                this.waitForTaskToBeChecked();
+                await elems[0].click();
+                console.log("Hide task: " + taskId);
+            } catch(e) {
+                console.log("Can't hide task: " + taskId);
+                console.log(e);
+            }    
+        }
+
+    }
+
     async clickTask(taskElem, text) {
         
         let subElems = await taskElem.findElements(By.xpath('.//button'));
@@ -156,9 +179,11 @@ module.exports = class Bosslike {
         if (taskParams) {
             let now = new Date;
             let date = new Date(taskParams.date*1000);
-            let mins = 10;
-            if (now - date < mins * 60 * 1000) {
-                console.log('' + taskId + ', ' + text + ', skipped. Time left: ' + Math.round((now - date) /1000));
+            let mins = 10 * 60 * 1000;
+            if (now - date < mins) {
+                console.log('' + taskId + ', ' + text + ', skipped. Time left: ' + (mins/1000 - Math.round((now - date) /1000)));
+                await this.hideTask(taskId, taskElem);
+                config.sleep(500);
                 return false;
             }
         }
@@ -194,6 +219,7 @@ module.exports = class Bosslike {
         if (result) {
 
             if (this.socialClicker.action === 'comment') {
+                await config.sleep(500);
                 comment = await this.getComment(taskElem, taskId);
                 if (comment) {
                     let btnElems = await taskElem.findElements(By.xpath('.//button[text()="Оставить комментарий"]'));
@@ -293,7 +319,11 @@ module.exports = class Bosslike {
 
         let elems = await taskElem.findElements(By.xpath('.//*[contains(text(), "Напишите свой осознанный комментарий")]'));
         if (elems.length !== 0) {
-            return 'Класс';
+            
+            let commentsArr = ['класс', 'круто', 'вау', 'wow', 'great', 'nice', 'не полхо', 'отлично', 'супер'];
+            let index = Math.floor(Math.random() * commentsArr.length);
+
+            return commentsArr[index];
         }
 
         elems = await this.driver.findElements(By.xpath(`//*[@id="taskComment${taskId}"]`));
