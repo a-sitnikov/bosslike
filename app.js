@@ -54,9 +54,9 @@ async function run() {
     for (let i = 0; i < count; i++) {
         
         if (i % 10 === 0) {
-            console.log(i, (new Date).toISOString());
+            console.log("\x1b[33m" + i, (new Date).toISOString(), "\x1b[39m");
         } else {
-            console.log(i);
+            console.log("\x1b[33m" + i, "\x1b[39m");
         }
         bosslike.openInstagram('all');
         

@@ -33,3 +33,5 @@ exports.isBlocked = function(text) {
     }
     return false;
 }
+
+exports.errorColor = "\x1b[35m";

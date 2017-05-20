@@ -27,7 +27,7 @@ module.exports = class InstagramClicker {
             return true;
 
         } catch(e) {
-            console.log(e);
+            console.log(config.errorColor + e.message, "\x1b[39m");
             return false;
         }    
     }
@@ -66,7 +66,7 @@ module.exports = class InstagramClicker {
                 }
             } catch(e) {
                 console.log("Finding element failed: " + path);
-                console.log(e);
+                console.log(config.errorColor + e.message, "\x1b[39m");
             }   
         }
 
@@ -82,7 +82,7 @@ module.exports = class InstagramClicker {
                  }
              } catch(e) {
                 console.log("Finding element failed: " + path);
-                console.log(e);
+                console.log(config.errorColor + e.message, "\x1b[39m");
              }  
 
         }
@@ -95,7 +95,7 @@ module.exports = class InstagramClicker {
                 await this.driver.executeScript('return window.scrollTo(' + (loc.x - 350) + ',' + (loc.y - 350) + ');');
             } catch(e) {
                 console.log("Failed to scroll to Like button");
-                console.log(e);                
+                console.log(config.errorColor + e.message, "\x1b[39m");               
             }    
         
             try {
@@ -111,7 +111,7 @@ module.exports = class InstagramClicker {
             } catch(e) {
                 result = false;
                 console.log('Failed to click Like button');
-                console.log(e);   
+                console.log(config.errorColor + e.message, "\x1b[39m");
             }   
 
         } else {
