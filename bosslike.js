@@ -36,7 +36,7 @@ module.exports = class Bosslike {
             let elems = await _this.driver.findElements(By.id('pageLoader'));
             return elems.length === 0;
         });
-        this.driver.wait(condition, 2000);
+        this.driver.wait(condition, 3200);
     }
 
      async waitForLogin() {

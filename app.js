@@ -16,7 +16,8 @@ if (!profile) {
 let count = parseInt(args[1]);
 
 let arr = profile.split(new RegExp('\\\\|\\/', 'g'));
-let dbname = 'bosslike_' + arr[arr.length - 1] + '.sqlite3';
+let accName = arr[arr.length - 1];
+let dbname = 'bosslike_' + accName + '.sqlite3';
 console.log(dbname);
 const db = new sqlite3.Database(dbname);
 
@@ -59,12 +60,17 @@ async function run() {
             console.log("\x1b[33m" + i, "\x1b[39m");
         }
         bosslike.openInstagram('all');
+        try {
+            await driver.executeScript(`window.document.title = "${accName}"`);
+        } catch(e){
+            console.log(config.errorColor  + e.message, "\x1b[39m");
+        }
         
         try {
             bosslike.waitForTasksToBeLoaded();
         } catch(e) {
             console.log("Tasks not loaded");
-            console.log(e);
+            console.log(config.errorColor  + e.message, "\x1b[39m");
             continue;
         }   
 
@@ -74,7 +80,7 @@ async function run() {
 
     dbLog.close();
     if (count > 0) {
-        //driver.quit();
+        driver.quit();
         console.log('Complete');
     }
 
