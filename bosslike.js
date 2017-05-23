@@ -106,10 +106,12 @@ module.exports = class Bosslike {
             let result = await this.clickTask(elem, text, '');
  
             if (result) {
-                break;
+                return result;
             }
         }
 
+        console.log('No tasks');
+        await config.sleep(config.PAUSE.NO_TASKS);
         return result;
 
     }
@@ -190,7 +192,7 @@ module.exports = class Bosslike {
             let mins = 10 * 60 * 1000;
             if (now - date < mins) {
                 console.log('' + taskId + ', ' + text + ', skipped. Time left: ' + (mins/1000 - Math.round((now - date) /1000)));
-                await this.hideTask(taskId, taskElem);
+                //await this.hideTask(taskId, taskElem);
                 config.sleep(500);
                 return false;
             }
@@ -343,10 +345,10 @@ module.exports = class Bosslike {
             return ';'
         }   
 
-        let elems = await taskElem.findElements(By.xpath('.//*[contains(text(), "Напишите свой осознанный комментарий")]'));
+        let elems = await taskElem.findElements(By.xpath('.//*[contains(text(), "Напишите осознанный комментарий")]'));
         if (elems.length !== 0) {
             
-            let commentsArr = ['класс', 'круто', 'вау', 'wow', 'great', 'nice', 'не полхо', 'отлично', 'супер'];
+            let commentsArr = ['класс', 'круто', 'вау', 'wow', 'great', 'nice', 'не полхо', 'отлично', 'супер', '+'];
             let index = Math.floor(Math.random() * commentsArr.length);
 
             return commentsArr[index];

@@ -52,6 +52,8 @@ async function run() {
         return;
     } 
 
+    let types = ['like', 'subscribe', 'comment'];
+
     for (let i = 0; i < count; i++) {
         
         if (i % 10 === 0) {
@@ -59,8 +61,11 @@ async function run() {
         } else {
             console.log("\x1b[33m" + i, "\x1b[39m");
         }
+
+        let type = types[i % 3];
+
         try {
-            bosslike.openInstagram('all');
+            bosslike.openInstagram(type);
             await driver.executeScript(`window.document.title = "${accName}"`);
         } catch(e){
             console.log(config.errorColor  + e.message, "\x1b[39m");
