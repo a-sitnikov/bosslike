@@ -52,7 +52,7 @@ async function run() {
         return;
     } 
 
-    let types = ['like', 'subscribe', 'comment'];
+    let taskTypes = ['like', 'subscribe', 'comment'];
 
     for (let i = 0; i < count; i++) {
         
@@ -62,10 +62,10 @@ async function run() {
             console.log("\x1b[33m" + i, "\x1b[39m");
         }
 
-        let type = types[i % 3];
+        let taskType = taskTypes[i % taskTypes.length];
 
         try {
-            bosslike.openInstagram(type);
+            bosslike.openInstagram(taskType);
             await driver.executeScript(`window.document.title = "${accName}"`);
         } catch(e){
             console.log(config.errorColor  + e.message, "\x1b[39m");
