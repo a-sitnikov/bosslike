@@ -62,7 +62,13 @@ module.exports = class Bosslike {
             let elems = await _this.driver.findElements(By.xpath(xpathArr.join(' | ')));
             return elems === null || elems.length === 0;
         });
-        this.driver.wait(condition, 10000);
+
+        try {
+            this.driver.wait(condition, 10000);
+        } catch(e) {
+            console.log("Waiting for task to be checked failed");
+            console.log(config.errorColor, e.message, "\x1b[39m");          
+        }   
     }
 
     async getTasksAndCompleteFirst() {
@@ -277,15 +283,9 @@ module.exports = class Bosslike {
             console.log(config.errorColor + e.message, "\x1b[39m");
         }  
 
-        let condition = new webdriver.Condition('', async function (webdriver) {
-            let text = "";
-            try {
-                text = await button.getText()
-            } catch(e) {
-                console.log("Can't get button text");
-                console.log(config.errorColor + e.message, "\x1b[39m");
-            }
-            return text !== 'Проверка';
+         let condition = new webdriver.Condition('', async function (webdriver) {
+            let elems = await taskElem.findElements(By.xpath('.//button[text()="Проверка"]'));
+            return elems.length === 0;
         });
 
         try { 
@@ -335,7 +335,13 @@ module.exports = class Bosslike {
             let elems = await taskElem.findElements(By.xpath('.//div[@class="form-group comment-place"]'));
             return elems.length !== 0;
         });
-        this.driver.wait(condition, 1000);
+        try {
+            this.driver.wait(condition, 1000);
+        } catch(e) {
+            console.log("Can't get comment");
+            console.log(config.errorColor + e.message, "\x1b[39m");
+            return ';'
+        }   
 
         let elems = await taskElem.findElements(By.xpath('.//*[contains(text(), "Напишите свой осознанный комментарий")]'));
         if (elems.length !== 0) {

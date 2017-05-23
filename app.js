@@ -59,8 +59,8 @@ async function run() {
         } else {
             console.log("\x1b[33m" + i, "\x1b[39m");
         }
-        bosslike.openInstagram('all');
         try {
+            bosslike.openInstagram('all');
             await driver.executeScript(`window.document.title = "${accName}"`);
         } catch(e){
             console.log(config.errorColor  + e.message, "\x1b[39m");
@@ -74,7 +74,12 @@ async function run() {
             continue;
         }   
 
-        await bosslike.getTasksAndCompleteFirst();
+        try {
+            await bosslike.getTasksAndCompleteFirst();
+        } catch(e) {
+            console.log("Can't copmlete task");
+            console.log(config.errorColor  + e.message, "\x1b[39m");
+        }      
         await config.sleep(config.PAUSE.AFTER_TASK_COMPLETE);
     }   
 
