@@ -26,7 +26,13 @@ module.exports = class Bosslike {
 
     async openInstagram(type) {
         this.social = 'instagram';
-        await this.driver.get(`http://bosslike.ru/tasks/instagram/${type}/`);
+        try{
+            this.driver.get(`http://bosslike.ru/tasks/instagram/${type}/`);
+            return true;
+        } catch(e) {
+            console.log(config.errorColor, e.message, "\x1b[39m");  
+            return false;            
+        }   
     }
 
     async waitForTasksToBeLoaded() {

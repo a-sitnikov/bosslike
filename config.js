@@ -36,3 +36,14 @@ exports.isBlocked = function(text) {
 }
 
 exports.errorColor = "\x1b[35m";
+
+exports.customLog = function(logFile) {
+
+    return function(...data) {
+        
+        let str = data.join(' ') + '\n';
+        logFile.write(str.replace("\x1b[33m", "").replace("\x1b[35m", "").replace("\x1b[39m", ""));
+        process.stdout.write(str);
+    }
+
+}

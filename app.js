@@ -7,6 +7,7 @@ const config   = require("./config");
 const DBLog    = require('./dblog');
 
 const sqlite3 = require('sqlite3').verbose();
+const fs = require('fs');
 
 let args = process.argv.splice(2);
 let profile = args[0];
@@ -15,9 +16,14 @@ if (!profile) {
 }
 let count = parseInt(args[1]);
 
+
 let arr = profile.split(new RegExp('\\\\|\\/', 'g'));
 let accName = arr[arr.length - 1];
 let dbname = 'bosslike_' + accName + '.sqlite3';
+
+let logFile = fs.createWriteStream(`${__dirname}/${accName}.log`, {flags : 'w'});
+console.log = config.customLog(logFile);
+
 console.log(dbname);
 const db = new sqlite3.Database(dbname);
 
@@ -64,8 +70,12 @@ async function run() {
 
         let taskType = taskTypes[i % taskTypes.length];
 
+        if (!bosslike.openInstagram(taskType)) {
+            await config.sleep(config.PAUSE.NO_TASKS);
+            continue;
+        }    
+
         try {
-            bosslike.openInstagram(taskType);
             await driver.executeScript(`window.document.title = "${accName}"`);
         } catch(e){
             console.log(config.errorColor  + e.message, "\x1b[39m");
