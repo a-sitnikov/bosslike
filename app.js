@@ -33,13 +33,18 @@ function connectBrowser() {
     
     options.setChromeBinaryPath(config.chrome_options.binaryPath);
     options.addArguments('user-data-dir=' + profile);
-    options.addArguments('disable-session-crashed-bubble');
     options.addArguments('disable-infobars');
+    options.addArguments('no-pings');
+    //options.addArguments('disable-session-crashed-bubble');
+    //options.addArguments('dns-prefetch-disable');  
 
     let driver = new webdriver.Builder()
         .forBrowser('chrome')
         .setChromeOptions(options)
         .build();
+
+    driver.manage().timeouts().implicitlyWait(2000); 
+    driver.manage().timeouts().pageLoadTimeout(40*1000);
 
     return driver;    
 }
