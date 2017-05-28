@@ -35,6 +35,7 @@ function connectBrowser() {
     options.addArguments('user-data-dir=' + profile);
     options.addArguments('disable-infobars');
     options.addArguments('no-pings');
+    //options.addArguments('single-process');
     //options.addArguments('disable-session-crashed-bubble');
     //options.addArguments('dns-prefetch-disable');  
 
@@ -43,7 +44,7 @@ function connectBrowser() {
         .setChromeOptions(options)
         .build();
 
-    driver.manage().timeouts().implicitlyWait(2000); 
+    driver.manage().timeouts().implicitlyWait(1000); 
     driver.manage().timeouts().pageLoadTimeout(40*1000);
 
     return driver;    

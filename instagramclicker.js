@@ -47,45 +47,50 @@ module.exports = class InstagramClicker {
         let elemPaths = [];
         let elemPathsAlreadyDone = [];
         
-        elemPaths.push(By.xpath('//button[text()="Following"]'));
-        elemPathsAlreadyDone.push(By.xpath('//button[text()="Follow"]'));
+        elemPaths.push('//button[text()="Following"]');
+        elemPathsAlreadyDone.push('//button[text()="Follow"]');
 
         let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths);
         return result;
      }
     
     async fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment){
-        
-        for (let path of elemPathsAlreadyDone) {
 
-            try {
-                let elems = await this.driver.findElements(path);
-                if (elems.length > 0) {
-                    console.log('Alredy done');
-                    return false;
-                }
-            } catch(e) {
-                console.log("Finding element failed: " + path);
-                console.log(config.errorColor + e.message, "\x1b[39m");
-            }   
-        }
+       let elems = null; 
+       try {
+           elems = await this.driver.findElements(By.xpath('//*[contains(text(), "Sorry, this page")]'));
+           if (elems.length > 0) {
+                console.log("Sorry, this page doesn't exists");
+                return false;
+            }
+        } catch(e) {
+            console.log("Finding element failed: " + path);
+            console.log(config.errorColor + e.message, "\x1b[39m");
+        }   
+
+       try {
+           elems = await this.driver.findElements(By.xpath(elemPathsAlreadyDone.join(' | ')));
+           if (elems.length > 0) {
+                console.log('Alredy done');
+                return false;
+            }
+        } catch(e) {
+            console.log("Finding element failed: " + elemPathsAlreadyDone);
+            console.log(config.errorColor + e.message, "\x1b[39m");
+        }   
 
         let currElem = null;
-        for (let path of elemPaths) {
+        try {
+            elems = await this.driver.findElements(By.xpath(elemPaths.join(' | ')));
 
-             try {
-                 let elems = await this.driver.findElements(path);
+            if (elems.length > 0) {
+                currElem = elems[0];
+            }
+        } catch(e) {
+            console.log("Finding element failed: " + elemPaths);
+            console.log(config.errorColor + e.message, "\x1b[39m");
+        }  
 
-                 if (elems.length > 0) {
-                     currElem = elems[0];
-                     break;
-                 }
-             } catch(e) {
-                console.log("Finding element failed: " + path);
-                console.log(config.errorColor + e.message, "\x1b[39m");
-             }  
-
-        }
         
         let result = null;
         if (currElem) {
@@ -157,19 +162,17 @@ module.exports = class InstagramClicker {
     
         if (this.action === 'like') {
             
-             elemPathsAlreadyDone.push(By.xpath('//span[text()="Unlike"]'));
-             elemPathsAlreadyDone.push(By.xpath('//*[contains(text(), "Sorry, this page")]'));
- 
-             elemPaths.push(By.xpath('//span[text()="Like"]'));
+             elemPathsAlreadyDone.push('//span[text()="Unlike"]');
+             elemPaths.push('//span[text()="Like"]');
  
         } else if (this.action === 'subscribe') {
 
-             elemPathsAlreadyDone.push(By.xpath('//button[text()="Following"]'));
-             elemPaths.push(By.xpath('//button[text()="Follow"]'));
+             elemPathsAlreadyDone.push('//button[text()="Following"]');
+             elemPaths.push('//button[text()="Follow"]');
 
         } else if (this.action === 'comment') {  
              
-             elemPaths.push(By.xpath('//input[@placeholder="Add a comment…"]'));
+             elemPaths.push('//input[@placeholder="Add a comment…"]');
 
         }    
 
