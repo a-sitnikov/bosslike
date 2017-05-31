@@ -27,7 +27,7 @@ module.exports = class Bosslike {
     async openInstagram(type) {
         this.social = 'instagram';
         try{
-            this.driver.get(`http://bosslike.ru/tasks/instagram/${type}/`);
+            await this.driver.get(`http://bosslike.ru/tasks/instagram/${type}/`);
             return true;
         } catch(e) {
             console.log(config.errorColor, e.message, "\x1b[39m");  
@@ -292,8 +292,13 @@ module.exports = class Bosslike {
         }  
 
          let condition = new webdriver.Condition('', async function (webdriver) {
-            let elems = await taskElem.findElements(By.xpath('.//button[text()="Проверка"]'));
-            return elems.length === 0;
+             try {
+                 let elems = await taskElem.findElements(By.xpath('.//button[text()="Проверка"]'));
+                 return elems.length === 0;
+             } catch(e) {
+                 console.log(config.errorColor + e.message, "\x1b[39m");
+                 return false;
+             }   
         });
 
         try { 

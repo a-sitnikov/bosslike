@@ -44,7 +44,7 @@ function connectBrowser() {
         .setChromeOptions(options)
         .build();
 
-    driver.manage().timeouts().implicitlyWait(1000); 
+    driver.manage().timeouts().implicitlyWait(1500); 
     driver.manage().timeouts().pageLoadTimeout(40*1000);
 
     return driver;    

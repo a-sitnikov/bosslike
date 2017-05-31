@@ -19,8 +19,13 @@ module.exports = class InstagramClicker {
             
             let _this = this;
             let condition = new webdriver.Condition('', async function (webdriver) {
-                let elems = await _this.driver.findElements(By.xpath('//*[contains(text(), "В социальных сетях существуют лимиты")]'));
-                return elems.length === 0;
+                try {
+                    let elems = await _this.driver.findElements(By.xpath('//*[contains(text(), "В социальных сетях существуют лимиты")]'));
+                    return elems.length === 0;
+                } catch(e) {
+                    console.log(config.errorColor + e.message, "\x1b[39m");
+                    return false;
+                }    
             });
 
             this.driver.wait(condition, config.PAUSE.MAXWAIT_FOR_PROTECT);
@@ -56,33 +61,34 @@ module.exports = class InstagramClicker {
     
     async fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment){
 
-       let elems = null; 
-       try {
-           elems = await this.driver.findElements(By.xpath('//*[contains(text(), "Sorry, this page")]'));
-           if (elems.length > 0) {
+        let elems = null; 
+        try {
+            elems = await this.driver.findElements(By.xpath('//*[contains(text(), "Sorry, this page")]'));
+            if (elems.length > 0) {
                 console.log("Sorry, this page doesn't exists");
                 return false;
             }
         } catch(e) {
-            console.log("Finding element failed: " + path);
+            console.log("Finding element failed");
             console.log(config.errorColor + e.message, "\x1b[39m");
         }   
 
-       try {
-           elems = await this.driver.findElements(By.xpath(elemPathsAlreadyDone.join(' | ')));
-           if (elems.length > 0) {
-                console.log('Alredy done');
-                return false;
-            }
-        } catch(e) {
-            console.log("Finding element failed: " + elemPathsAlreadyDone);
-            console.log(config.errorColor + e.message, "\x1b[39m");
-        }   
+        if (elemPathsAlreadyDone.length > 0){
+            try {
+                elems = await this.driver.findElements(By.xpath(elemPathsAlreadyDone.join(' | ')));
+                if (elems.length > 0) {
+                    console.log('Alredy done');
+                    return false;
+                }
+            } catch(e) {
+                console.log("Finding element failed: " + elemPathsAlreadyDone);
+                console.log(config.errorColor + e.message, "\x1b[39m");
+            }  
+        } 
 
         let currElem = null;
         try {
             elems = await this.driver.findElements(By.xpath(elemPaths.join(' | ')));
-
             if (elems.length > 0) {
                 currElem = elems[0];
             }
@@ -90,7 +96,6 @@ module.exports = class InstagramClicker {
             console.log("Finding element failed: " + elemPaths);
             console.log(config.errorColor + e.message, "\x1b[39m");
         }  
-
         
         let result = null;
         if (currElem) {
