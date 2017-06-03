@@ -23,7 +23,7 @@ module.exports = class InstagramClicker {
                     let elems = await _this.driver.findElements(By.xpath('//*[contains(text(), "В социальных сетях существуют лимиты")]'));
                     return elems.length === 0;
                 } catch(e) {
-                    console.log(config.errorColor + e.message, "\x1b[39m");
+                    console.error(e, "");
                     return false;
                 }    
             });
@@ -32,7 +32,31 @@ module.exports = class InstagramClicker {
             return true;
 
         } catch(e) {
-            console.log(config.errorColor + e.message, "\x1b[39m");
+            console.error(e, "");
+            return false;
+        }    
+    }
+    
+    async waitForInstagramPageLoaded() {
+        
+        try {
+            
+            let _this = this;
+            let condition = new webdriver.Condition('', async function (webdriver) {
+                try {
+                    let elems = await _this.driver.findElements(By.xpath('//span[contains(text(), "Instagram")]'));
+                    return elems.length !== 0;
+                } catch(e) {
+                    console.error(e, "");
+                    return false;
+                }    
+            });
+
+            this.driver.wait(condition, config.PAUSE.MAXWAIT_FOR_PROTECT);
+            return true;
+
+        } catch(e) {
+            console.error(e, "");
             return false;
         }    
     }
@@ -69,8 +93,7 @@ module.exports = class InstagramClicker {
                 return false;
             }
         } catch(e) {
-            console.log("Finding element failed");
-            console.log(config.errorColor + e.message, "\x1b[39m");
+            console.error(e, "Finding element failed");
         }   
 
         if (elemPathsAlreadyDone.length > 0){
@@ -78,11 +101,10 @@ module.exports = class InstagramClicker {
                 elems = await this.driver.findElements(By.xpath(elemPathsAlreadyDone.join(' | ')));
                 if (elems.length > 0) {
                     console.log('Alredy done');
-                    return false;
+                    return this.action === 'subscribe' ? true: false;
                 }
             } catch(e) {
-                console.log("Finding element failed: " + elemPathsAlreadyDone);
-                console.log(config.errorColor + e.message, "\x1b[39m");
+                console.error(e, "Finding element failed: " + elemPathsAlreadyDone);
             }  
         } 
 
@@ -93,8 +115,7 @@ module.exports = class InstagramClicker {
                 currElem = elems[0];
             }
         } catch(e) {
-            console.log("Finding element failed: " + elemPaths);
-            console.log(config.errorColor + e.message, "\x1b[39m");
+            console.error(e, "Finding element failed: " + elemPaths);
         }  
         
         let result = null;
@@ -104,8 +125,7 @@ module.exports = class InstagramClicker {
                 let loc = await currElem.getLocation();
                 await this.driver.executeScript('return window.scrollTo(' + (loc.x - 350) + ',' + (loc.y - 350) + ');');
             } catch(e) {
-                console.log("Failed to scroll to Like button");
-                console.log(config.errorColor + e.message, "\x1b[39m");               
+                console.error(e, "Failed to scroll to Like button");
             }    
         
             try {
@@ -120,8 +140,7 @@ module.exports = class InstagramClicker {
                 await config.sleep(config.PAUSE.AFTER_JOIN_CLICK);
             } catch(e) {
                 result = false;
-                console.log('Failed to click Like button');
-                console.log(config.errorColor + e.message, "\x1b[39m");
+                console.error(e, 'Failed to click Like button');
             }   
 
         } else {
@@ -160,10 +179,12 @@ module.exports = class InstagramClicker {
             return false;
         }
         
+        //span[contains(text(), "Instagram")]
+        this.waitForInstagramPageLoaded();
+
         this.url = await this.driver.getCurrentUrl();
         let elemPaths = [];
         let elemPathsAlreadyDone = [];
-        let acrion;
     
         if (this.action === 'like') {
             
@@ -177,7 +198,7 @@ module.exports = class InstagramClicker {
 
         } else if (this.action === 'comment') {  
              
-             elemPaths.push('//input[@placeholder="Add a comment…"]');
+             elemPaths.push('//input[contains(@placeholder, "comment")]');
 
         }    
 

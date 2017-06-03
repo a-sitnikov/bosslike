@@ -30,7 +30,7 @@ module.exports = class Bosslike {
             await this.driver.get(`http://bosslike.ru/tasks/instagram/${type}/`);
             return true;
         } catch(e) {
-            console.log(config.errorColor, e.message, "\x1b[39m");  
+            console.error(e, "");  
             return false;            
         }   
     }
@@ -72,8 +72,7 @@ module.exports = class Bosslike {
         try {
             this.driver.wait(condition, 10000);
         } catch(e) {
-            console.log("Waiting for task to be checked failed");
-            console.log(config.errorColor, e.message, "\x1b[39m");          
+            console.error(e, "Waiting for task to be checked failed");
         }   
     }
 
@@ -153,7 +152,7 @@ module.exports = class Bosslike {
             let loc = await elem.getLocation();
             await this.driver.executeScript('return window.scrollTo(' + (loc.x - 350) + ',' + (loc.y - 350) + ');');        
         } catch(e) {
-            console.log("Can't scroll to elem");
+            console.error(e, "Can't scroll to elem");
         }    
     }
 
@@ -168,8 +167,7 @@ module.exports = class Bosslike {
                 await href.click();
                 console.log("Hide task: " + taskId);
             } catch(e) {
-                console.log("Can't hide task: " + taskId);
-                console.log(config.errorColor, e.message, "\x1b[39m");
+                console.error(e, "Can't hide task: " + taskId);
             }    
         }
 
@@ -216,8 +214,7 @@ module.exports = class Bosslike {
         try {
             this.waitForTaskToBeChecked();
         } catch(e) {
-            console.log("Waiting for task to be checked failed");
-            console.log(config.errorColor + e.message, "\x1b[39m");
+            console.error(e, "Waiting for task to be checked failed");
             result = false;
         }    
         
@@ -225,11 +222,17 @@ module.exports = class Bosslike {
             try {
                 await button.click();
             } catch(e) {
-                console.log("Failed to click task button");
-                console.log(config.errorColor + e.message, "\x1b[39m");
+                console.error(e, "Failed to click task button");
                 result = false;
             }   
         }
+        
+        try {
+            this.waitForTaskToBeChecked();
+        } catch(e) {
+            console.error(e, "Waiting for task to be checked failed");
+            result = false;
+        }    
 
         let comment = '';
         if (result) {
@@ -247,8 +250,7 @@ module.exports = class Bosslike {
                         try {
                             await bntComment.click();
                         } catch(e) {
-                            console.log("Can't click Comment button");
-                            console.log(config.errorColor + e.message, "\x1b[39m");
+                            console.error(e, "Can't click Comment button");
                         }  
                     } else {
                         console.log('No button: Оставить комментарий');
@@ -280,15 +282,13 @@ module.exports = class Bosslike {
         try {
             await this.closeTaskWindow();
         } catch(e) {
-            console.log("Failed to close task window");
-            console.log(config.errorColor + e.message, "\x1b[39m");
+            console.error(e, "Failed to close task window");
         }    
         
         try {
             await this.driver.switchTo().window(this.mainWindow);
         } catch(e) {
-            console.log("Can't switch to main window");
-            console.log(config.errorColor + e.message, "\x1b[39m");
+            console.error(e, "Can't switch to main window");
         }  
 
          let condition = new webdriver.Condition('', async function (webdriver) {
@@ -296,7 +296,7 @@ module.exports = class Bosslike {
                  let elems = await taskElem.findElements(By.xpath('.//button[text()="Проверка"]'));
                  return elems.length === 0;
              } catch(e) {
-                 console.log(config.errorColor + e.message, "\x1b[39m");
+                 console.error(e, "");
                  return false;
              }   
         });
@@ -322,6 +322,8 @@ module.exports = class Bosslike {
 
     async unsubscribe(){
         
+        //if (this.socialClicker.url.search(/akterka.ru/ !== -1)) return;
+
         await this.driver.executeScript(`window.open()`);
         console.log('unsubscribe: ' + this.socialClicker.url);
 
@@ -334,8 +336,7 @@ module.exports = class Bosslike {
         try {
             await this.closeTaskWindow();
         } catch(e) {
-            console.log("Failed to close unsubscribe window");
-            console.log(config.errorColor + e.message, "\x1b[39m");
+            console.error(e, "Failed to close unsubscribe window");
         }  
         
         await this.driver.switchTo().window(this.mainWindow);
@@ -351,8 +352,7 @@ module.exports = class Bosslike {
         try {
             this.driver.wait(condition, 1000);
         } catch(e) {
-            console.log("Can't get comment");
-            console.log(config.errorColor + e.message, "\x1b[39m");
+            console.error(e, "Can't get comment");
             return ';'
         }   
 
@@ -371,8 +371,7 @@ module.exports = class Bosslike {
                 let comment = await elems[0].getAttribute("value");
                 return comment;
             } catch(e) {
-                console.log("Can't get comment");
-                console.log(config.errorColor + e.message, "\x1b[39m");
+                console.error(e, "Can't get comment");
                 return '';
             }    
         }

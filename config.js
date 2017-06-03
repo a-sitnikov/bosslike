@@ -35,8 +35,6 @@ exports.isBlocked = function(text) {
     return false;
 }
 
-exports.errorColor = "\x1b[35m";
-
 exports.customLog = function(logFile) {
 
     return function(...data) {
@@ -45,5 +43,18 @@ exports.customLog = function(logFile) {
         logFile.write(str.replace("\x1b[33m", "").replace("\x1b[35m", "").replace("\x1b[39m", ""));
         process.stdout.write(str);
     }
+}
 
+exports.customError = function(logFile) {
+
+    return function(e, message) {
+        
+        if (message) {
+            process.stdout.write(message);
+            logFile.write(message);
+        }    
+
+        process.stdout.write("\x1b[35m" + e.message + "\x1b[39m");
+        logFile.write(e.message);
+    }
 }

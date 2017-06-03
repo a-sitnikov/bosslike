@@ -23,6 +23,7 @@ let dbname = 'bosslike_' + accName + '.sqlite3';
 
 let logFile = fs.createWriteStream(`${__dirname}/${accName}.log`, {flags : 'w'});
 console.log = config.customLog(logFile);
+console.error = config.customError(logFile);
 
 console.log(dbname);
 const db = new sqlite3.Database(dbname);
@@ -64,7 +65,8 @@ async function run() {
         return;
     } 
 
-    let taskTypes = ['like', 'subscribe', 'comment'];
+    //let taskTypes = ['like', 'subscribe', 'comment'];
+    let taskTypes = ['comment'];
 
     for (let i = 0; i < count; i++) {
         
@@ -84,22 +86,20 @@ async function run() {
         try {
             await driver.executeScript(`window.document.title = "${accName}"`);
         } catch(e){
-            console.log(config.errorColor  + e.message, "\x1b[39m");
+            console.error(e, "");
         }
         
         try {
             bosslike.waitForTasksToBeLoaded();
         } catch(e) {
-            console.log("Tasks not loaded");
-            console.log(config.errorColor  + e.message, "\x1b[39m");
+            console.error(e, "Tasks not loaded");
             continue;
         }   
 
         try {
             await bosslike.getTasksAndCompleteFirst();
         } catch(e) {
-            console.log("Can't copmlete task");
-            console.log(config.errorColor  + e.message, "\x1b[39m");
+            console.error(e, "Can't copmlete task");
         }      
         await config.sleep(config.PAUSE.AFTER_TASK_COMPLETE);
     }   
