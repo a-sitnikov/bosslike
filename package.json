@@ -6,6 +6,7 @@
   "devDependencies": {},
   "dependencies": {
     "chromedriver": "^2.29.0",
+    "minimist": "^1.2.0",
     "selenium-webdriver": "^3.4.0",
     "sqlite3": "^3.1.8"
   },

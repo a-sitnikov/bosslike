@@ -1,6 +1,7 @@
 "use strict";
 const webdriver = require("selenium-webdriver");
 const chrome    = require("selenium-webdriver/chrome");
+const argv      = require('minimist')(process.argv.slice(2));
 
 const Bosslike = require("./bosslike");
 const config   = require("./config");
@@ -9,16 +10,12 @@ const DBLog    = require('./dblog');
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 
-let args = process.argv.splice(2);
-let profile = args[0];
-if (!profile) {
-    profile = config.chrome_options.profile;
-}
-let count = parseInt(args[1]);
-
+let profile = argv.profile;
+let count = parseInt(argv.count || 0);
+let social = argv.social || 'instagram';
 
 let arr = profile.split(new RegExp('\\\\|\\/', 'g'));
-let accName = arr[arr.length - 1];
+let accName = arr[arr.length - 2];
 let dbname = 'bosslike_' + accName + '.sqlite3';
 
 let logFile = fs.createWriteStream(`${__dirname}/${accName}.log`, {flags : 'w'});
@@ -56,17 +53,15 @@ async function run() {
     let driver = connectBrowser();
     let dbLog = new DBLog(db);
     let bosslike = new Bosslike(driver, dbLog);
-    bosslike.openInstagram('all');     
+    bosslike.mainWindow = await bosslike.driver.getWindowHandle();
+
+    bosslike.open(social, 'all');     
     try {
         bosslike.waitForLogin();
     } catch(e) {
-        console.log("Login not perfomed");
-        console.log(e);
+        console.error(e, "Login not perfomed");
         return;
     } 
-
-    //let taskTypes = ['like', 'subscribe', 'comment'];
-    let taskTypes = ['comment'];
 
     for (let i = 0; i < count; i++) {
         
@@ -76,9 +71,9 @@ async function run() {
             console.log("\x1b[33m" + i, "\x1b[39m");
         }
 
-        let taskType = taskTypes[i % taskTypes.length];
+        let taskType = bosslike.getTaskType(i);
 
-        if (!bosslike.openInstagram(taskType)) {
+        if (!bosslike.open(social, taskType)) {
             await config.sleep(config.PAUSE.NO_TASKS);
             continue;
         }    
@@ -90,7 +85,7 @@ async function run() {
         }
         
         try {
-            bosslike.waitForTasksToBeLoaded();
+            await bosslike.waitForTasksToBeLoaded();
         } catch(e) {
             console.error(e, "Tasks not loaded");
             continue;

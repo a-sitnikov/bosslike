@@ -6,12 +6,14 @@ const webdriver = require("selenium-webdriver");
 let By = webdriver.By;
 let until = webdriver.until;
 
-module.exports = class InstagramClicker {
+module.exports = class YoutubeClicker {
     
     constructor(driver, mainWindow) {
         this.driver = driver;
         this.mainWindow = mainWindow;
-        this.taskTypes = ['all', 'like', 'subscribe', 'comment'];
+        //this.taskTypes = ['all', 'like', 'subscribe', 'comment', 'watch'];
+        this.taskTypes = ['watch'];
+
     };
 
     async waitForPageToBeEnabled() {
@@ -156,6 +158,8 @@ module.exports = class InstagramClicker {
             this.action = 'subscribe';
         } else if (text.search('Оставить комментарий') === 0) {
             this.action = 'comment';
+        } else if (text.search('Посмотреть') === 0) {
+            this.action = 'watch';
         }    
     }
 
@@ -202,8 +206,13 @@ module.exports = class InstagramClicker {
 
         if (!this.action) return false;
         
-        let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment);
-        return result;
+        if (this.action === 'watch') {
+            await config.sleep(40000);
+            return true;
+
+        } else {
+            return await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment);
+        }    
 
     }
 }

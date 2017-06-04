@@ -2,6 +2,7 @@
 const webdriver = require("selenium-webdriver");
 const config    = require("./config");
 const InstagramClicker = require("./instagramclicker");
+const YoutubeClicker = require("./youtubeclicker");
 
 const By    = webdriver.By;
 const until = webdriver.until;
@@ -15,8 +16,16 @@ module.exports = class Bosslike {
         this.skippedTasks = new Map;
     }
 
-    async open() {
-        await this.driver.get(`http://bosslike.ru/`);
+    getTaskType(i) {
+        return this.socialClicker.taskTypes[i % this.socialClicker.taskTypes.length];
+    }
+
+    async open(social, type) {
+
+        social = social || 'instagram';
+        if (social === 'instagram') await this.openInstagram(type); 
+        else if (social === 'vk') await this.openVK(type); 
+        else if (social === 'youtube') await this.openYoutube(type); 
     }
     
     async openVK(type) {
@@ -26,8 +35,21 @@ module.exports = class Bosslike {
 
     async openInstagram(type) {
         this.social = 'instagram';
+        this.socialClicker = new InstagramClicker(this.driver, this.mainWindow);
         try{
             await this.driver.get(`http://bosslike.ru/tasks/instagram/${type}/`);
+            return true;
+        } catch(e) {
+            console.error(e, "");  
+            return false;            
+        }   
+    }
+    
+    async openYoutube(type) {
+        this.social = 'youtube';
+        this.socialClicker = new YoutubeClicker(this.driver, this.mainWindow);
+        try{
+            await this.driver.get(`http://bosslike.ru/tasks/youtube/${type}/`);
             return true;
         } catch(e) {
             console.error(e, "");  
@@ -42,7 +64,11 @@ module.exports = class Bosslike {
             let elems = await _this.driver.findElements(By.id('pageLoader'));
             return elems.length === 0;
         });
-        this.driver.wait(condition, 3200);
+        try {
+            await this.driver.wait(condition, 3200);
+        } catch(e) {
+            console.error(e, "");  
+        }          
     }
 
      async waitForLogin() {
@@ -78,8 +104,6 @@ module.exports = class Bosslike {
 
     async getTasksAndCompleteFirst() {
         
-        this.mainWindow = await this.driver.getWindowHandle();
-
         let elements = await this.driver.findElements(By.xpath("//div[contains(@class, 'task_item')]"));
         let elem = null;
         let result = false;
@@ -94,14 +118,14 @@ module.exports = class Bosslike {
                 continue;
             }
             */
-            
+ /*           
             this.socialClicker = null;
             if (this.social === 'vk') {
             }
             else if (this.social === 'instagram') {
                 this.socialClicker = new InstagramClicker(this.driver, this.mainWindow);
             }
-
+*/
             this.socialClicker.setAction(text);
             if (!this.socialClicker.action) {
                 console.log(text + ', unsupported');
