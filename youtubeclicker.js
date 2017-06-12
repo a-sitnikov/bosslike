@@ -12,7 +12,8 @@ module.exports = class YoutubeClicker {
         this.driver = driver;
         this.mainWindow = mainWindow;
         //this.taskTypes = ['all', 'like', 'subscribe', 'comment', 'watch'];
-        this.taskTypes = ['watch'];
+        //this.taskTypes = ['subscribe'];
+        this.taskTypes = ['subscribe', 'watch'];
 
     };
 
@@ -38,28 +39,6 @@ module.exports = class YoutubeClicker {
         }    
     }
     
-    async waitForInstagramPageLoaded() {
-        
-        let _this = this;
-        let condition = new webdriver.Condition('', async function (webdriver) {
-            try {
-                let elems = await _this.driver.findElements(By.xpath('//span[contains(text(), "Instagram")] | //span[contains(text(), "INSTAGRAM")]'));
-                return elems && elems.length !== 0;
-            } catch(e) {
-                console.error(e, "");
-                return false;
-            }    
-        });
-
-        try {
-            await this.driver.wait(condition, 5000);
-            return true;
-        } catch(e) {
-            console.error(e, "Waiting span Instagram failed");
-            return false;
-        }    
-    }
-
     async windowClosed() {
         let handles = await this.driver.getAllWindowHandles();
         if (handles.length === 1) {
@@ -74,16 +53,48 @@ module.exports = class YoutubeClicker {
              
         let elemPaths = [];
         let elemPathsAlreadyDone = [];
+       
+        elemPathsAlreadyDone.push('//yt-formatted-string[contains(text(), "Подписка оформлена")]');
+        elemPathsAlreadyDone.push('//yt-formatted-string[contains(text(), "Subscribed ")]');
+        elemPathsAlreadyDone.push('//yt-formatted-string[text()="Subscribed"]');
         
-        elemPaths.push('//button[text()="Following"]');
-        elemPathsAlreadyDone.push('//button[text()="Follow"]');
+        elemPaths.push('//yt-formatted-string[contains(text(), "Subscribe ")]');
+        elemPaths.push('//yt-formatted-string[text()="Subscribe"]');
+        elemPaths.push('//yt-formatted-string[contains(text(), "Подписаться")]');
 
-        let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths);
+        let result = await this.fimdElemAndClick(elemPaths, elemPathsAlreadyDone, null, 'Dialog opened');
+        if (!result) return false;
+
+        // confirm dialog
+        let driver = this.driver;
+        let condition = new webdriver.Condition('', async function (webdriver) {
+            try {
+                let elems = await driver.findElements(By.xpath('//ytd-confirm-dialog-renderer'));
+                return elems.length !== 0;
+            } catch(e) {
+                console.error(e, "");
+                return false;
+            } 
+        });
+
+        try { 
+            await this.driver.wait(condition, 10000);
+        } catch(e) {
+            console.error(e, "Waiting for confirm dialog failed");
+        }
+
+        elemPaths = [];
+        elemPaths.push('//yt-formatted-string[@id="text"][text()="Unsubscribe"]');
+        elemPaths.push('//yt-formatted-string[@id="text"][text()="Да"]');
+        elemPathsAlreadyDone = [];     
+        
+        result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths);
         return result;
      }
     
-    async fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment){
+    async fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment, logText){
 
+        logText = logText || 'Done';
         let elems = null; 
         try {
             elems = await this.driver.findElements(By.xpath('//*[contains(text(), "Sorry, this page")]'));
@@ -135,7 +146,7 @@ module.exports = class YoutubeClicker {
                     await currElem.click();
                 }    
                 result = true;
-                console.log('Done');
+                console.log(logText);
                 await config.sleep(config.PAUSE.AFTER_JOIN_CLICK);
             } catch(e) {
                 result = false;
@@ -147,6 +158,7 @@ module.exports = class YoutubeClicker {
             result = false;
         }
     
+        await config.sleep(3000);
         return result;
 
     }
@@ -180,9 +192,6 @@ module.exports = class YoutubeClicker {
             return false;
         }
         
-        //span[contains(text(), "Instagram")]
-        //this.waitForInstagramPageLoaded();
-
         this.url = await this.driver.getCurrentUrl();
         let elemPaths = [];
         let elemPathsAlreadyDone = [];
@@ -194,8 +203,13 @@ module.exports = class YoutubeClicker {
  
         } else if (this.action === 'subscribe') {
 
-             elemPathsAlreadyDone.push('//button[text()="Following"]');
-             elemPaths.push('//button[text()="Follow"]');
+             elemPathsAlreadyDone.push('//yt-formatted-string[contains(text(), "Подписка оформлена")]');
+             elemPathsAlreadyDone.push('//yt-formatted-string[contains(text(), "Subscribed ")]');
+             elemPathsAlreadyDone.push('//yt-formatted-string[text()="Subscribed"]');
+             
+             elemPaths.push('//yt-formatted-string[contains(text(), "Subscribe ")]');
+             elemPaths.push('//yt-formatted-string[text()="Subscribe"]');
+             elemPaths.push('//yt-formatted-string[contains(text(), "Подписаться")]');
 
         } else if (this.action === 'comment') {  
              

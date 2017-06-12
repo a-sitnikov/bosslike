@@ -15,7 +15,7 @@ let count = parseInt(argv.count || 0);
 let social = argv.social || 'instagram';
 
 let arr = profile.split(new RegExp('\\\\|\\/', 'g'));
-let accName = arr[arr.length - 2];
+let accName = arr[arr.length - 1];
 let dbname = 'bosslike_' + accName + '.sqlite3';
 
 let logFile = fs.createWriteStream(`${__dirname}/${accName}.log`, {flags : 'w'});
@@ -33,9 +33,10 @@ function connectBrowser() {
     options.addArguments('user-data-dir=' + profile);
     options.addArguments('disable-infobars');
     options.addArguments('no-pings');
-    //options.addArguments('single-process');
-    //options.addArguments('disable-session-crashed-bubble');
-    //options.addArguments('dns-prefetch-disable');  
+    //options.addArguments('headless');
+    //options.addArguments('disable-gpu');
+    //options.addArguments('remote-debugging-port=9222');
+
 
     let driver = new webdriver.Builder()
         .forBrowser('chrome')
@@ -79,7 +80,8 @@ async function run() {
         }    
 
         try {
-            await driver.executeScript(`window.document.title = "${accName}"`);
+            let title = accName + ' (' + count + ')';
+            await driver.executeScript(`window.document.title = "${title}"`);
         } catch(e){
             console.error(e, "");
         }

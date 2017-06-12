@@ -91,12 +91,17 @@ module.exports = class Bosslike {
                 '//*[contains(text(), "задания не существует")]'
                 ];
 
-            let elems = await _this.driver.findElements(By.xpath(xpathArr.join(' | ')));
-            return elems === null || elems.length === 0;
+            try {
+                let elems = await _this.driver.findElements(By.xpath(xpathArr.join(' | ')));
+                return elems === null || elems.length === 0;
+            } catch(e) {
+                console.error(e, "Waiting for task to be checked failed");
+                return true;
+            }   
         });
 
         try {
-            this.driver.wait(condition, 10000);
+            await this.driver.wait(condition, 10000);
         } catch(e) {
             console.error(e, "Waiting for task to be checked failed");
         }   
@@ -316,19 +321,19 @@ module.exports = class Bosslike {
         }  
 
          let condition = new webdriver.Condition('', async function (webdriver) {
-             try {
-                 let elems = await taskElem.findElements(By.xpath('.//button[text()="Проверка"]'));
-                 return elems.length === 0;
-             } catch(e) {
-                 console.error(e, "");
-                 return false;
-             }   
+            try {
+                let elems = await taskElem.findElements(By.xpath('.//*[contains(text(),"Проверка")]'));
+                return elems.length === 0;
+            } catch(e) {
+                console.error(e, "");
+                return false;
+            }   
         });
 
         try { 
-            this.driver.wait(condition, 3000);
+            await this.driver.wait(condition, 30000);
         } catch(e) {
-
+            console.error(e, "Waiting for check failed");
         }
 
         if (result && this.socialClicker.action === 'subscribe') {
