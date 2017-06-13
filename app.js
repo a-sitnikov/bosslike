@@ -80,7 +80,7 @@ async function run() {
         }    
 
         try {
-            let title = accName + ' (' + count + ')';
+            let title = accName + ' (' + (count-i) + ')';
             await driver.executeScript(`window.document.title = "${title}"`);
         } catch(e){
             console.error(e, "");

@@ -336,6 +336,12 @@ module.exports = class Bosslike {
             console.error(e, "Waiting for check failed");
         }
 
+        let elems = await taskElem.findElements(By.xpath('.//*[contains(text(),"ВЫПОЛНЕНО")]'));
+        if (elems.length !== 0)
+            console.log('Status: completed');
+        else    
+            console.log('Status: not completed');
+
         if (result && this.socialClicker.action === 'subscribe') {
             await config.sleep(config.PAUSE.BEFORE_UNSUBSCRIBE);
             await this.unsubscribe();
