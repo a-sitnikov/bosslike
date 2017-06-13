@@ -67,7 +67,7 @@ module.exports = class YoutubeClicker {
         let elemPaths = this.paths.subscribe.alreadyDone;
 
         let result = await this.fimdElemAndClick(elemPathsAlreadyDone,  elemPaths, null, 'Dialog opened', 200);
-        if (!result) return false;
+        if (result !== 'OK') return false;
 
         let dialogXPath = By.xpath('//*[contains(name(), "confirm-dialog-renderer") or contains(@class, "dialog-show")]');
         // confirm dialog
@@ -116,7 +116,7 @@ module.exports = class YoutubeClicker {
             elems = await this.driver.findElements(By.xpath('//*[contains(text(), "Sorry, this page")]'));
             if (elems && elems.length > 0) {
                 console.log("Sorry, this page doesn't availibale");
-                return false;
+                return "Page doesn't availibale";
             }
         } catch(e) {
             console.error(e, "Finding element failed");
@@ -127,7 +127,7 @@ module.exports = class YoutubeClicker {
                 elems = await parent.findElements(By.xpath(elemPathsAlreadyDone.join(' | ')));
                 if (elems && elems.length > 0) {
                     console.log('Alredy done');
-                    return this.action === 'subscribe' ? true: false;
+                    return 'Alredy done';
                 }
             } catch(e) {
                 console.error(e, "Finding element failed: " + elemPathsAlreadyDone);
@@ -161,17 +161,17 @@ module.exports = class YoutubeClicker {
                 } else {
                     await currElem.click();
                 }    
-                result = true;
+                result = 'OK';
                 console.log(logText);
                 await config.sleep(pause);
             } catch(e) {
-                result = false;
-                console.error(e, 'Failed to click Like button');
+                result = 'Failed to click button';
+                console.error(e, 'Failed to click button');
             }   
 
         } else {
             console.log('no element');
-            result = false;
+            result = 'No element';
         }
     
         await config.sleep(3000);
@@ -231,13 +231,12 @@ module.exports = class YoutubeClicker {
 
         if (!this.action) return false;
         
-        if (this.action === 'watch') {
-            await config.sleep(40000);
-            return true;
-
-        } else {
-            return await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment);
+        if (this.action !== 'watch') {
+            let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment);
+            return result === 'OK' || result === 'Already done';
         }    
+        
+        await config.sleep(40000);
 
     }
 }
