@@ -86,7 +86,7 @@ module.exports = class InstagramClicker {
         try {
             elems = await this.driver.findElements(By.xpath('//*[contains(text(), "Sorry, this page")]'));
             if (elems && elems.length > 0) {
-                console.log("Sorry, this page doesn't availibale");
+                console.log("Sorry, this page isn't available");
                 return false;
             }
         } catch(e) {

@@ -16,14 +16,14 @@ let social = argv.social || 'instagram';
 
 let arr = profile.split(new RegExp('\\\\|\\/', 'g'));
 let accName = arr[arr.length - 1];
-let dbname = 'bosslike_' + accName + '.sqlite3';
+let dbname = `${accName}.sqlite3`;
 
-let logFile = fs.createWriteStream(`${__dirname}/${accName}.log`, {flags : 'w'});
+let logFile = fs.createWriteStream(`${__dirname}/logs/${accName}.log`, {flags : 'w'});
 console.log = config.customLog(logFile);
 console.error = config.customError(logFile);
 
 console.log(dbname);
-const db = new sqlite3.Database(dbname);
+const db = new sqlite3.Database(`logs/${dbname}`);
 
 function connectBrowser() {
     

@@ -51,10 +51,10 @@ exports.customError = function(logFile) {
         
         if (message) {
             process.stdout.write(message + '\n');
-            logFile.write(message);
+            logFile.write(message + '\n');
         }    
 
         process.stdout.write("\x1b[35m" + e.message + "\x1b[39m" + "\n");
-        logFile.write(e.message);
+        logFile.write(e.message + '\n');
     }
 }

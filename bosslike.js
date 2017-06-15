@@ -320,10 +320,10 @@ module.exports = class Bosslike {
             console.error(e, "Can't switch to main window");
         }  
 
-         let condition = new webdriver.Condition('', async function (webdriver) {
+        let condition = new webdriver.Condition('', async function (webdriver) {
             try {
                 let elems = await taskElem.findElements(By.xpath('.//*[contains(text(),"Проверка")]'));
-                return elems.length === 0;
+                return !elems || elems.length === 0;
             } catch(e) {
                 console.error(e, "");
                 return false;
