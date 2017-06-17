@@ -123,14 +123,7 @@ module.exports = class Bosslike {
                 continue;
             }
             */
- /*           
-            this.socialClicker = null;
-            if (this.social === 'vk') {
-            }
-            else if (this.social === 'instagram') {
-                this.socialClicker = new InstagramClicker(this.driver, this.mainWindow);
-            }
-*/
+
             this.socialClicker.setAction(text);
             if (!this.socialClicker.action) {
                 console.log(text + ', unsupported');
@@ -139,7 +132,7 @@ module.exports = class Bosslike {
 
             let result = await this.clickTask(elem, text, '');
  
-            if (result) {
+            if (result === true || result === 'OK') {
                 return result;
             }
         }
@@ -304,10 +297,10 @@ module.exports = class Bosslike {
                 await config.sleep(config.PAUSE.AFTER_FALSE_TASK);
                 result = false;
             }
+            result = await this.socialClicker.doAction(comment);
+        
         }
     
-        result = await this.socialClicker.doAction(comment);
-        
         try {
             await this.closeTaskWindow();
         } catch(e) {
@@ -330,19 +323,21 @@ module.exports = class Bosslike {
             }   
         });
 
-        try { 
-            await this.driver.wait(condition, 30000);
-        } catch(e) {
-            console.error(e, "Waiting for check failed");
+        if (result === true || result === 'OK') {
+            try { 
+                await this.driver.wait(condition, 30000);
+            } catch(e) {
+                console.error(e, "Waiting for check failed");
+            }
+
+            let elems = await taskElem.findElements(By.xpath('.//*[contains(text(),"ВЫПОЛНЕНО")]'));
+            if (elems.length !== 0)
+                console.log('Status: completed');
+            else    
+                console.log('Status: not completed');
         }
 
-        let elems = await taskElem.findElements(By.xpath('.//*[contains(text(),"ВЫПОЛНЕНО")]'));
-        if (elems.length !== 0)
-            console.log('Status: completed');
-        else    
-            console.log('Status: not completed');
-
-        if (result && this.socialClicker.action === 'subscribe') {
+        if ((result === true || result === 'OK' || result === 'Already done') && this.socialClicker.action === 'subscribe') {
             await config.sleep(config.PAUSE.BEFORE_UNSUBSCRIBE);
             await this.unsubscribe();
         }  
@@ -388,7 +383,7 @@ module.exports = class Bosslike {
             this.driver.wait(condition, 1000);
         } catch(e) {
             console.error(e, "Can't get comment");
-            return ';'
+            return '';
         }   
 
         let elems = await taskElem.findElements(By.xpath('.//*[contains(text(), "Напишите осознанный комментарий")]'));

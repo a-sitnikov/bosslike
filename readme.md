@@ -1,1 +1,1 @@
-Automatic execution of tasks on bosslike.ru
+Automatic execution of tasks at bosslike.ru

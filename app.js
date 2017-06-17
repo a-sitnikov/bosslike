@@ -1,4 +1,5 @@
 "use strict";
+const dateFormat = require('dateformat');
 const webdriver = require("selenium-webdriver");
 const chrome    = require("selenium-webdriver/chrome");
 const argv      = require('minimist')(process.argv.slice(2));
@@ -66,8 +67,8 @@ async function run() {
 
     for (let i = 0; i < count; i++) {
         
-        if (i % 10 === 0) {
-            console.log("\x1b[33m" + i, (new Date).toISOString(), "\x1b[39m");
+        if (i % 5 === 0) {
+            console.log("\x1b[33m" + i, dateFormat(new Date, 'HH:MM:ss, dd.mm.yy'), "\x1b[39m");
         } else {
             console.log("\x1b[33m" + i, "\x1b[39m");
         }
@@ -89,7 +90,7 @@ async function run() {
         try {
             await bosslike.waitForTasksToBeLoaded();
         } catch(e) {
-            console.error(e, "Tasks not loaded");
+            console.error(e, "Tasks are not loaded");
             continue;
         }   
 

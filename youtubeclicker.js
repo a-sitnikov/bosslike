@@ -22,7 +22,7 @@ module.exports = class YoutubeClicker {
                     '//div[@id="channel-header"]//*[contains(text(), "Subscribe ") or text()="Subscribe" or contains(text(), "Подписаться")]'
                 ],
                 alreadyDone: [
-                    '//div[@id="channel-header"]//*[contains(text(), "Subscribed ") or text()="Subscribed" or contains(text(), "Подписка оформлена")]'    
+                    '//div[@id="channel-header"]//*[contains(text(), "Subscribed") or contains(text(), "Подписка оформлена")]'    
                 ]
             }
         }
@@ -231,12 +231,12 @@ module.exports = class YoutubeClicker {
 
         if (!this.action) return false;
         
-        if (this.action !== 'watch') {
-            let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment);
-            return result === 'OK' || result === 'Already done';
-        }    
-        
         await config.sleep(40000);
 
+        if (this.action !== 'watch') {
+            let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment);
+            return result;
+        }    
+        
     }
 }

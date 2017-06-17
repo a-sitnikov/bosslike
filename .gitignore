@@ -6,6 +6,4 @@
 /.idea
 
 test.js
-bosslike*.sqlite3
-*.log
 /logs
