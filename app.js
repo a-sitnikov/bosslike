@@ -87,12 +87,7 @@ async function run() {
             console.error(e, "");
         }
         
-        try {
-            await bosslike.waitForTasksToBeLoaded();
-        } catch(e) {
-            console.error(e, "Tasks are not loaded");
-            continue;
-        }   
+        if (!await bosslike.waitForTasksToBeLoaded()) continue;
 
         try {
             await bosslike.getTasksAndCompleteFirst();

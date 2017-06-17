@@ -31,24 +31,12 @@ module.exports = class YoutubeClicker {
 
     async waitForPageToBeEnabled() {
         
-        let _this = this;
-        let condition = new webdriver.Condition('', async function (webdriver) {
-            try {
-                let elems = await _this.driver.findElements(By.xpath('//*[contains(text(), "В социальных сетях существуют лимиты")]'));
-                return elems === null || elems.length === 0;
-            } catch(e) {
-                console.error(e, "");
-                return false;
-            }    
-        });
-
-        try {
-            await this.driver.wait(condition, config.PAUSE.MAXWAIT_FOR_PROTECT);
-            return true;
-        } catch(e) {
-            console.error(e, "");
-            return false;
-        }    
+        return await config.waitFor(this.driver, this.driver,
+            By.xpath('//*[contains(text(), "В социальных сетях существуют лимиты")]'),
+            false, config.PAUSE.MAXWAIT_FOR_PROTECT,
+            ""
+        );
+            
     }
     
     async windowClosed() {
@@ -209,27 +197,8 @@ module.exports = class YoutubeClicker {
         }
         
         this.url = await this.driver.getCurrentUrl();
-        let elemPaths = [];
-        let elemPathsAlreadyDone = [];
-    
-        if (this.action === 'like') {
-            
-             elemPathsAlreadyDone.push('//span[text()="Unlike"]');
-             elemPaths.push('//span[text()="Like"]');
- 
-        } else if (this.action === 'subscribe') {
-
-             elemPathsAlreadyDone = this.paths.subscribe.alreadyDone;
-             elemPaths            = this.paths.subscribe.paths;
-
-        } else if (this.action === 'comment') {  
-             
-             elemPaths.push('//input[contains(@placeholder, "comment")]');
-             elemPaths.push('//textarea[contains(@placeholder, "comment")]');
-
-        }    
-
-        if (!this.action) return false;
+        let elemPaths            = this.paths[this.action].paths;
+        let elemPathsAlreadyDone = this.paths[this.action].alreadyDone; 
         
         await config.sleep(40000);
 

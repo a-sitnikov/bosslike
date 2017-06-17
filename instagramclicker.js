@@ -12,28 +12,35 @@ module.exports = class InstagramClicker {
         this.driver = driver;
         this.mainWindow = mainWindow;
         this.taskTypes = ['all', 'like', 'subscribe', 'comment'];
+
+        this.paths = {
+            like: {
+                paths:       ['//span[text()="Like"]'],
+                alreadyDone: ['//span[text()="Unlike"]']
+            },
+
+            subscribe: {
+                paths:       ['//button[text()="Follow"]'],
+                alreadyDone: ['//button[text()="Following"]']
+            },
+            comment: {
+                paths: [
+                    '//input[contains(@placeholder, "comment")]',
+                    '//textarea[contains(@placeholder, "comment")]'    
+                ],
+                alreadyDone: []
+            }
+        }
     };
 
     async waitForPageToBeEnabled() {
         
-        let _this = this;
-        let condition = new webdriver.Condition('', async function (webdriver) {
-            try {
-                let elems = await _this.driver.findElements(By.xpath('//*[contains(text(), "В социальных сетях существуют лимиты")]'));
-                return elems === null || elems.length === 0;
-            } catch(e) {
-                console.error(e, "");
-                return false;
-            }    
-        });
-
-        try {
-            await this.driver.wait(condition, config.PAUSE.MAXWAIT_FOR_PROTECT);
-            return true;
-        } catch(e) {
-            console.error(e, "");
-            return false;
-        }    
+        return await config.waitFor(this.driver, this.driver,
+            By.xpath('//*[contains(text(), "В социальных сетях существуют лимиты")]'),
+            false, config.PAUSE.MAXWAIT_FOR_PROTECT,
+            ""
+        );
+            
     }
     
     async waitForInstagramPageLoaded() {
@@ -70,11 +77,8 @@ module.exports = class InstagramClicker {
         
         //this.driver.get(this.url);
              
-        let elemPaths = [];
-        let elemPathsAlreadyDone = [];
-        
-        elemPaths.push('//button[text()="Following"]');
-        elemPathsAlreadyDone.push('//button[text()="Follow"]');
+        let elemPaths = this.paths.subscribe.alreadyDone;
+        let elemPathsAlreadyDone = this.paths.subscribe.paths;
 
         let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths);
         return result;
@@ -118,12 +122,7 @@ module.exports = class InstagramClicker {
         let result = null;
         if (currElem) {
             
-            try {
-                let loc = await currElem.getLocation();
-                await this.driver.executeScript('return window.scrollTo(' + (loc.x - 350) + ',' + (loc.y - 350) + ');');
-            } catch(e) {
-                console.error(e, "Failed to scroll to Like button");
-            }    
+            await config.scrollTo(this.driver, currElem);
         
             try {
                 if (this.action === 'comment') {
@@ -180,28 +179,9 @@ module.exports = class InstagramClicker {
         //this.waitForInstagramPageLoaded();
 
         this.url = await this.driver.getCurrentUrl();
-        let elemPaths = [];
-        let elemPathsAlreadyDone = [];
+        let elemPaths            = this.paths[this.action].paths;
+        let elemPathsAlreadyDone = this.paths[this.action].alreadyDone;
     
-        if (this.action === 'like') {
-            
-             elemPathsAlreadyDone.push('//span[text()="Unlike"]');
-             elemPaths.push('//span[text()="Like"]');
- 
-        } else if (this.action === 'subscribe') {
-
-             elemPathsAlreadyDone.push('//button[text()="Following"]');
-             elemPaths.push('//button[text()="Follow"]');
-
-        } else if (this.action === 'comment') {  
-             
-             elemPaths.push('//input[contains(@placeholder, "comment")]');
-             elemPaths.push('//textarea[contains(@placeholder, "comment")]');
-
-        }    
-
-        if (!this.action) return false;
-        
         let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment);
         return result;
 

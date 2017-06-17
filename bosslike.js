@@ -59,52 +59,30 @@ module.exports = class Bosslike {
 
     async waitForTasksToBeLoaded() {
         
-        let _this = this;
-        let condition = new webdriver.Condition('', async function (webdriver) {
-            let elems = await _this.driver.findElements(By.id('pageLoader'));
-            return elems.length === 0;
-        });
-        try {
-            await this.driver.wait(condition, 3200);
-        } catch(e) {
-            console.error(e, "");  
-        }          
+        return await config.waitFor(this.driver, this.driver, 
+            By.xpath('//*[@id="pageLoader"]'), 
+            false, 3200, "");
     }
 
      async waitForLogin() {
-        let _this = this;
-        let condition = new webdriver.Condition('', async function (webdriver) {
-            let elems = await _this.driver.findElements(By.xpath('//a[@class="navbar-brand"]'));
-            return elems.length !== 0;
-        });
-        this.driver.wait(condition, config.PAUSE.WAIT_FOR_LOGIN);
+
+        return await config.waitFor(this.driver, this.driver, 
+            By.xpath('//a[@class="navbar-brand"]'), 
+            true, config.PAUSE.WAIT_FOR_LOGIN, "");
     }
     
       async waitForTaskToBeChecked() {
         
-        let _this = this;
-        let condition = new webdriver.Condition('', async function (webdriver) {
+        let xpathArr = [
+            '//*[contains(text(), "Выполнение не подтверждено")]',
+            '//*[contains(text(), "задание уже выполнено")]',
+            '//*[contains(text(), "задания не существует")]'
+        ];
 
-            let xpathArr = [
-                '//*[contains(text(), "Выполнение не подтверждено")]',
-                '//*[contains(text(), "задание уже выполнено")]',
-                '//*[contains(text(), "задания не существует")]'
-                ];
-
-            try {
-                let elems = await _this.driver.findElements(By.xpath(xpathArr.join(' | ')));
-                return elems === null || elems.length === 0;
-            } catch(e) {
-                console.error(e, "Waiting for task to be checked failed");
-                return true;
-            }   
-        });
-
-        try {
-            await this.driver.wait(condition, 10000);
-        } catch(e) {
-            console.error(e, "Waiting for task to be checked failed");
-        }   
+        return await config.waitFor(this.driver, this.driver, 
+            By.xpath(xpathArr.join(' | ')), 
+            false, 10000, 
+            "Waiting for task to be checked failed");
     }
 
     async getTasksAndCompleteFirst() {
@@ -152,7 +130,7 @@ module.exports = class Bosslike {
                     await this.driver.switchTo().window(handle);
                     return true;
                 } catch (e) {
-
+                    console.error(e, "");
                 }
             }
         }
@@ -164,29 +142,24 @@ module.exports = class Bosslike {
         
         let handle = await this.driver.getWindowHandle();
         if (handle !== this.mainWindow) {
-            await this.driver.close();        
+            try {
+                await this.driver.close();        
+            } catch(e) {
+                console.error(e, "Failed to close task window");    
+            }    
         }   
         
-    }
-
-    async scrollToElement(elem) {
-        try {
-            let loc = await elem.getLocation();
-            await this.driver.executeScript('return window.scrollTo(' + (loc.x - 350) + ',' + (loc.y - 350) + ');');        
-        } catch(e) {
-            console.error(e, "Can't scroll to elem");
-        }    
     }
 
     async hideTask(taskId, taskElem) {
 
         let elems = await taskElem.findElements(By.xpath('.//*[contains(text(), "Скрыть")]'));
-        if (elems.length > 0) {
+        if (elems && elems.length > 0) {
             try {
-                let href = elems[0];
-                this.waitForTaskToBeChecked();
-                await this.scrollToElement(href);
-                await href.click();
+                let link = elems[0];
+                await this.waitForTaskToBeChecked();
+                await config.scrollTo(this.driver, link);
+                await link.click();
                 console.log("Hide task: " + taskId);
             } catch(e) {
                 console.error(e, "Can't hide task: " + taskId);
@@ -223,22 +196,11 @@ module.exports = class Bosslike {
                 return false;
             }
         }
-        /*
-        let isBlockedTask = await dbLog.isBlocked(taskId);
-        if (isBlockedTask) {
-            console.log('Blocked ID: ' + taskId);
-            return false;
-        }
-        */
-        let result = true;
-        await this.scrollToElement(button);
 
-        try {
-            this.waitForTaskToBeChecked();
-        } catch(e) {
-            console.error(e, "Waiting for task to be checked failed");
-            result = false;
-        }    
+        let result = true;
+        await config.scrollTo(this.driver, button);
+
+        result = await this.waitForTaskToBeChecked();
         
         if (result) {
             try {
@@ -249,12 +211,7 @@ module.exports = class Bosslike {
             }   
         }
         
-        try {
-            this.waitForTaskToBeChecked();
-        } catch(e) {
-            console.error(e, "Waiting for task to be checked failed");
-            result = false;
-        }    
+        result = await this.waitForTaskToBeChecked();
 
         let comment = '';
         if (result) {
@@ -267,7 +224,7 @@ module.exports = class Bosslike {
                     if (btnElems.length !== 0) {
 
                         let bntComment = btnElems[0];
-                        await this.scrollToElement(bntComment);
+                        await config.scrollTo(this.driver, bntComment);
                         await config.sleep(500);
                         try {
                             await bntComment.click();
@@ -290,22 +247,18 @@ module.exports = class Bosslike {
             
             console.log("" + taskId + ", " + text + ', ' + comment);
 
-            let isSwithed = this.swithToTaskWindow();
+            let isSwithed = await this.swithToTaskWindow();
 
             if (!isSwithed) {
                 console.log("Can't switch window");
                 await config.sleep(config.PAUSE.AFTER_FALSE_TASK);
                 result = false;
-            }
-            result = await this.socialClicker.doAction(comment);
+            } else 
+                result = await this.socialClicker.doAction(comment);
         
         }
     
-        try {
-            await this.closeTaskWindow();
-        } catch(e) {
-            console.error(e, "Failed to close task window");
-        }    
+        await this.closeTaskWindow();
         
         try {
             await this.driver.switchTo().window(this.mainWindow);
@@ -313,34 +266,25 @@ module.exports = class Bosslike {
             console.error(e, "Can't switch to main window");
         }  
 
-        let condition = new webdriver.Condition('', async function (webdriver) {
-            try {
-                let elems = await taskElem.findElements(By.xpath('.//*[contains(text(),"Проверка")]'));
-                return !elems || elems.length === 0;
-            } catch(e) {
-                console.error(e, "");
-                return false;
-            }   
-        });
+        if (result === true || result === 'OK' || result === 'Already done') {
 
-        if (result === true || result === 'OK') {
-            try { 
-                await this.driver.wait(condition, 30000);
-            } catch(e) {
-                console.error(e, "Waiting for check failed");
-            }
+            await config.waitFor(this.driver, taskElem,
+                By.xpath('.//*[contains(text(),"Проверка")]'),
+                false, 30000,
+                "Waiting for check failed"
+            );
 
             let elems = await taskElem.findElements(By.xpath('.//*[contains(text(),"ВЫПОЛНЕНО")]'));
-            if (elems.length !== 0)
-                console.log('Status: completed');
+            if (elems && elems.length !== 0)
+                console.log('Status: complete');
             else    
-                console.log('Status: not completed');
-        }
+                console.log('Status: not complete');
 
-        if ((result === true || result === 'OK' || result === 'Already done') && this.socialClicker.action === 'subscribe') {
-            await config.sleep(config.PAUSE.BEFORE_UNSUBSCRIBE);
-            await this.unsubscribe();
-        }  
+            if (this.socialClicker.action === 'subscribe') {
+                await config.sleep(config.PAUSE.BEFORE_UNSUBSCRIBE);
+                await this.unsubscribe();
+            }
+        }
 
         if (this.socialClicker.action === 'comment') {
             this.dbLog.addTask(taskId, result);
@@ -357,34 +301,23 @@ module.exports = class Bosslike {
         await this.driver.executeScript(`window.open()`);
         console.log('unsubscribe: ' + this.socialClicker.url);
 
-        let isSwithed = this.swithToTaskWindow();
+        let isSwithed = await this.swithToTaskWindow();
         if (isSwithed) {
             await this.driver.get(this.socialClicker.url);
             await this.socialClicker.unsubscribe();
         }
         
-        try {
-            await this.closeTaskWindow();
-        } catch(e) {
-            console.error(e, "Failed to close unsubscribe window");
-        }  
-        
+        await this.closeTaskWindow();
         await this.driver.switchTo().window(this.mainWindow);
     }
 
     async getComment(taskElem, taskId) {
         
-        let _this = this;
-        let condition = new webdriver.Condition('', async function (webdriver) {
-            let elems = await taskElem.findElements(By.xpath('.//div[@class="form-group comment-place"]'));
-            return elems.length !== 0;
-        });
-        try {
-            this.driver.wait(condition, 1000);
-        } catch(e) {
-            console.error(e, "Can't get comment");
-            return '';
-        }   
+        await config.waitFor(this.driver, taskElem,
+            By.xpath('.//div[@class="form-group comment-place"]'),
+            true, 1000,
+            "Can't get comment"
+        );
 
         let elems = await taskElem.findElements(By.xpath('.//*[contains(text(), "Напишите осознанный комментарий")]'));
         if (elems.length !== 0) {
@@ -399,7 +332,11 @@ module.exports = class Bosslike {
         if (elems.length !== 0) {
             try {
                 let comment = await elems[0].getAttribute("value");
-                return comment;
+                if (config.isBlocked(comment)) {
+                    console.log(`Blocked comment: ${comment}`);
+                    return '';
+                } else    
+                    return comment;
             } catch(e) {
                 console.error(e, "Can't get comment");
                 return '';

@@ -1,4 +1,5 @@
 "use strict";
+const webdriver = require("selenium-webdriver");
 
 exports.PAUSE = {
     AFTER_TASK_CLICK: 1000,
@@ -57,4 +58,35 @@ exports.customError = function(logFile) {
         process.stdout.write("\x1b[35m" + e.message + "\x1b[39m" + "\n");
         logFile.write(e.message + '\n');
     }
+}
+
+exports.waitFor = async function (driver, parent, ByXPath, exist, time, comment) {
+    
+    let condition = new webdriver.Condition('', async function (webdriver) {
+        let elems = await parent.findElements(ByXPath);
+        if (exist)
+            return elems && elems.length !== 0;
+        else    
+            return !elems || elems.length === 0;
+    });
+    try {
+        await driver.wait(condition, time);
+        return true;
+    } catch(e) {
+        console.error(e, comment);
+        return false;
+    }   
+}
+
+exports.scrollTo = async function(driver, elem, offset) {
+    
+    offset = offset || 350;
+
+    try {
+        let loc = await elem.getLocation();
+        await driver.executeScript('return window.scrollTo(' + (loc.x) + ',' + (loc.y - offset) + ');');        
+    } catch(e) {
+        console.error(e, "Can't scroll to elem");
+    }    
+
 }
