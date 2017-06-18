@@ -35,7 +35,7 @@ module.exports = class YoutubeClicker {
             By.xpath('//*[contains(text(), "В социальных сетях существуют лимиты")]'),
             false, config.PAUSE.MAXWAIT_FOR_PROTECT,
             ""
-        );
+        ).result;
             
     }
     
@@ -197,15 +197,15 @@ module.exports = class YoutubeClicker {
         }
         
         this.url = await this.driver.getCurrentUrl();
-        let elemPaths            = this.paths[this.action].paths;
-        let elemPathsAlreadyDone = this.paths[this.action].alreadyDone; 
-        
         await config.sleep(40000);
 
         if (this.action !== 'watch') {
+            let elemPaths            = this.paths[this.action].paths;
+            let elemPathsAlreadyDone = this.paths[this.action].alreadyDone; 
             let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment);
             return result;
-        }    
+        } else 
+            return true;   
         
     }
 }

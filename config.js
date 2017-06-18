@@ -60,21 +60,26 @@ exports.customError = function(logFile) {
     }
 }
 
-exports.waitFor = async function (driver, parent, ByXPath, exist, time, comment) {
+exports.waitFor = async function (driver, parent, byXPath, exist, time, comment) {
     
+    let foundElem = null;
     let condition = new webdriver.Condition('', async function (webdriver) {
-        let elems = await parent.findElements(ByXPath);
-        if (exist)
-            return elems && elems.length !== 0;
-        else    
+        let elems = await parent.findElements(byXPath);
+        if (exist) {
+            if (elems && elems.length !== 0) {
+                foundElem = elems[0];
+                return true;
+            } else
+                return false;
+        } else    
             return !elems || elems.length === 0;
     });
     try {
         await driver.wait(condition, time);
-        return true;
+        return { result: true, element: foundElem };
     } catch(e) {
         console.error(e, comment);
-        return false;
+        return { result: true, element: null };
     }   
 }
 

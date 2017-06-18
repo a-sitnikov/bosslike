@@ -35,11 +35,11 @@ module.exports = class InstagramClicker {
 
     async waitForPageToBeEnabled() {
         
-        return await config.waitFor(this.driver, this.driver,
+        return (await config.waitFor(this.driver, this.driver,
             By.xpath('//*[contains(text(), "В социальных сетях существуют лимиты")]'),
             false, config.PAUSE.MAXWAIT_FOR_PROTECT,
             ""
-        );
+        )).result;
             
     }
     

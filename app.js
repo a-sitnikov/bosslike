@@ -58,9 +58,7 @@ async function run() {
     bosslike.mainWindow = await bosslike.driver.getWindowHandle();
 
     bosslike.open(social, 'all');     
-    try {
-        bosslike.waitForLogin();
-    } catch(e) {
+    if (!await bosslike.waitForLogin()) {
         console.error(e, "Login not perfomed");
         return;
     } 
