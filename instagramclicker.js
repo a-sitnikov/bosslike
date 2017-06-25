@@ -39,7 +39,7 @@ module.exports = class InstagramClicker {
             By.xpath('//*[contains(text(), "В социальных сетях существуют лимиты")]'),
             false, config.PAUSE.MAXWAIT_FOR_PROTECT,
             ""
-        )).result;
+        )).ok;
             
     }
     

@@ -76,10 +76,10 @@ exports.waitFor = async function (driver, parent, byXPath, exist, time, comment)
     });
     try {
         await driver.wait(condition, time);
-        return { result: true, element: foundElem };
+        return { ok: true, element: foundElem };
     } catch(e) {
         console.error(e, comment);
-        return { result: true, element: null };
+        return { ok: false, element: null };
     }   
 }
 

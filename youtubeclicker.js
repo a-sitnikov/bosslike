@@ -11,9 +11,9 @@ module.exports = class YoutubeClicker {
     constructor(driver, mainWindow) {
         this.driver = driver;
         this.mainWindow = mainWindow;
-        //this.taskTypes = ['all', 'like', 'subscribe', 'comment', 'watch'];
-        //this.taskTypes = ['subscribe'];
-        this.taskTypes = ['subscribe', 'watch'];
+        this.taskTypes = ['all', 'like', 'subscribe', 'comment', 'watch'];
+        //this.taskTypes = ['like', 'subscribe', 'watch'];
+        //this.taskTypes = ['comment'];
 
         this.paths = {
             subscribe: {
@@ -24,6 +24,14 @@ module.exports = class YoutubeClicker {
                 alreadyDone: [
                     '//div[@id="channel-header"]//*[contains(text(), "Subscribed") or contains(text(), "Подписка оформлена")]'    
                 ]
+            },
+            like: {
+                paths: ['//button[contains(@aria-label, "Видео понравилось")][@aria-pressed="false"]'],
+                alreadyDone: ['//div[@id="info"]//button[@aria-pressed="true"]']
+            },
+            comment: {
+                paths: ['//textarea[@id="textarea"]'],
+                alreadyDone: []
             }
         }
 
@@ -35,7 +43,7 @@ module.exports = class YoutubeClicker {
             By.xpath('//*[contains(text(), "В социальных сетях существуют лимиты")]'),
             false, config.PAUSE.MAXWAIT_FOR_PROTECT,
             ""
-        ).result;
+        ).ok;
             
     }
     
@@ -145,7 +153,8 @@ module.exports = class YoutubeClicker {
             try {
                 if (this.action === 'comment') {
                     await currElem.sendKeys(comment);
-                    await currElem.submit();
+                    let submitBtn = await this.driver.findElement(By.xpath('//*[text()="Оставить комментарий"]'));
+                    await submitBtn.click();
                 } else {
                     await currElem.click();
                 }    
@@ -200,6 +209,23 @@ module.exports = class YoutubeClicker {
         await config.sleep(40000);
 
         if (this.action !== 'watch') {
+
+            if (this.action === 'comment') {
+
+                await this.driver.executeScript('return window.scrollTo(0, 400);');                  
+                let result = await config.waitFor(this.driver, this.driver, 
+                    By.xpath('//*[contains(text(), "ваш комментарий") or text()="Оставьте комментарий"]'), 
+                    true, 20000, "Can't find comment elem");
+
+                if (result.ok) {
+                    try {
+                        result.element.click();
+                    } catch(e) {
+                        console.error(e, "Failed to activate comment area");
+                    }
+                }
+            }
+
             let elemPaths            = this.paths[this.action].paths;
             let elemPathsAlreadyDone = this.paths[this.action].alreadyDone; 
             let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment);

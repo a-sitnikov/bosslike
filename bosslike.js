@@ -61,14 +61,14 @@ module.exports = class Bosslike {
         
         return (await config.waitFor(this.driver, this.driver, 
             By.xpath('//*[@id="pageLoader"]'), 
-            false, 3200, "")).result;
+            false, 3200, "")).ok;
     }
 
      async waitForLogin() {
 
         return (await config.waitFor(this.driver, this.driver, 
             By.xpath('//a[@class="navbar-brand"]'), 
-            true, config.PAUSE.WAIT_FOR_LOGIN, "")).result;
+            true, config.PAUSE.WAIT_FOR_LOGIN, "")).ok;
     }
     
       async waitForTaskToBeChecked() {
@@ -82,7 +82,7 @@ module.exports = class Bosslike {
         return (await config.waitFor(this.driver, this.driver, 
             By.xpath(xpathArr.join(' | ')), 
             false, 10000, 
-            "Waiting for task to be checked failed")).result;
+            "Waiting for task to be checked failed")).ok;
     }
 
     async getTasksAndCompleteFirst() {
@@ -110,7 +110,7 @@ module.exports = class Bosslike {
 
             let result = await this.clickTask(elem, text, '');
  
-            if (result === true || result === 'OK') {
+            if (result === true || result === 'OK' || result === 'Already done') {
                 return result;
             }
         }
