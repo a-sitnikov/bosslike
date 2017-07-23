@@ -153,7 +153,8 @@ module.exports = class YoutubeClicker {
             try {
                 if (this.action === 'comment') {
                     await currElem.sendKeys(comment);
-                    let submitBtn = await this.driver.findElement(By.xpath('//*[text()="Оставить комментарий"]'));
+                    let submitBtn = await this.driver.findElement(By.xpath('//*[text()="Оставить комментарий"]/../..'));
+                    await config.sleep(500);
                     await submitBtn.click();
                 } else {
                     await currElem.click();
@@ -206,8 +207,7 @@ module.exports = class YoutubeClicker {
         }
         
         this.url = await this.driver.getCurrentUrl();
-        await config.sleep(40000);
-
+ 
         if (this.action !== 'watch') {
 
             if (this.action === 'comment') {
@@ -229,8 +229,10 @@ module.exports = class YoutubeClicker {
             let elemPaths            = this.paths[this.action].paths;
             let elemPathsAlreadyDone = this.paths[this.action].alreadyDone; 
             let result = await this.fimdElemAndClick(elemPathsAlreadyDone, elemPaths, comment);
+            await config.sleep(40000);
             return result;
         } else 
+            await config.sleep(40000);
             return true;   
         
     }

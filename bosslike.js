@@ -281,8 +281,8 @@ module.exports = class Bosslike {
                 console.log('Status: not complete');
 
             if (this.socialClicker.action === 'subscribe') {
-                await config.sleep(config.PAUSE.BEFORE_UNSUBSCRIBE);
-                await this.unsubscribe();
+                //await config.sleep(config.PAUSE.BEFORE_UNSUBSCRIBE);
+                //await this.unsubscribe();
             }
         }
 
