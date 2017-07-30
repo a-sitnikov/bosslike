@@ -55,7 +55,6 @@ async function run() {
     let driver = connectBrowser();
     let dbLog = new DBLog(db);
     let bosslike = new Bosslike(driver, dbLog);
-    bosslike.mainWindow = await bosslike.driver.getWindowHandle();
 
     bosslike.open(social, 'all');     
     if (!await bosslike.waitForLogin()) {
@@ -73,14 +72,23 @@ async function run() {
 
         let taskType = bosslike.getTaskType(i);
 
-        if (!bosslike.open(social, taskType)) {
-            await config.sleep(config.PAUSE.NO_TASKS);
+        let isOpen = await bosslike.open(social, taskType);
+        if (!isOpen) {
+            try {
+                bosslike.driver.quit();
+            } catch (e) {
+                console.error(e, "quit");               
+            }    
+            console.log("Reconnecting to browser");
+            bosslike.driver = connectBrowser();
+            await config.sleep(config.PAUSE.RECONNECTING);
             continue;
         }    
+        bosslike.mainWindow = await bosslike.driver.getWindowHandle();
 
         try {
             let title = accName + ' (' + (count-i) + ')';
-            await driver.executeScript(`window.document.title = "${title}"`);
+            await bosslike.driver.executeScript(`window.document.title = "${title}"`);
         } catch(e){
             console.error(e, "");
         }
@@ -97,7 +105,7 @@ async function run() {
 
     dbLog.close();
     if (count > 0) {
-        driver.quit();
+        bosslike.driver.quit();
         console.log('Complete');
     }
 

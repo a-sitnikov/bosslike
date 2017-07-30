@@ -23,9 +23,12 @@ module.exports = class Bosslike {
     async open(social, type) {
 
         social = social || 'instagram';
-        if (social === 'instagram') await this.openInstagram(type); 
-        else if (social === 'vk') await this.openVK(type); 
-        else if (social === 'youtube') await this.openYoutube(type); 
+        if (social === 'instagram') 
+            return await this.openInstagram(type); 
+        else if (social === 'vk') 
+            return await this.openVK(type); 
+        else if (social === 'youtube') 
+            return await this.openYoutube(type); 
     }
     
     async openVK(type) {
@@ -270,7 +273,7 @@ module.exports = class Bosslike {
 
             await config.waitFor(this.driver, taskElem,
                 By.xpath('.//*[contains(text(),"Проверка")]'),
-                false, 30000,
+                false, 50000,
                 "Waiting for check failed"
             );
 

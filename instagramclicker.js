@@ -101,8 +101,8 @@ module.exports = class InstagramClicker {
             try {
                 elems = await this.driver.findElements(By.xpath(elemPathsAlreadyDone.join(' | ')));
                 if (elems && elems.length > 0) {
-                    console.log('Alredy done');
-                    return this.action === 'subscribe' ? true: false;
+                    console.log('Already done');
+                    return 'Already done';
                 }
             } catch(e) {
                 console.error(e, "Finding element failed: " + elemPathsAlreadyDone);
@@ -131,7 +131,7 @@ module.exports = class InstagramClicker {
                 } else {
                     await currElem.click();
                 }    
-                result = true;
+                result = 'OK';
                 console.log('Done');
                 await config.sleep(config.PAUSE.AFTER_JOIN_CLICK);
             } catch(e) {

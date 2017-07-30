@@ -13,16 +13,15 @@ module.exports = class YoutubeClicker {
         this.mainWindow = mainWindow;
         this.taskTypes = ['all', 'like', 'subscribe', 'comment', 'watch'];
         //this.taskTypes = ['like', 'subscribe', 'watch'];
-        //this.taskTypes = ['comment'];
+        //this.taskTypes = ['subscribe'];
 
         this.paths = {
             subscribe: {
                 paths: [
-                    '//div[contains(@class, "primary-header-contents")]//*[contains(text(), "Subscribe ") or text()="Subscribe"]',
-                    '//div[@id="channel-header"]//*[contains(text(), "Subscribe ") or text()="Subscribe" or contains(text(), "Подписаться")]'
+                    '//*[@id="channel-container"]//*[@id="subscribe-button"]//*[contains(text(), "Подписаться")]'
                 ],
                 alreadyDone: [
-                    '//div[@id="channel-header"]//*[contains(text(), "Subscribed") or contains(text(), "Подписка оформлена")]'    
+                    '//*[@id="channel-container"]//*[@id="subscribe-button"]//*[contains(text(), "Подписка оформлена")]'
                 ]
             },
             like: {
@@ -122,8 +121,8 @@ module.exports = class YoutubeClicker {
             try {
                 elems = await parent.findElements(By.xpath(elemPathsAlreadyDone.join(' | ')));
                 if (elems && elems.length > 0) {
-                    console.log('Alredy done');
-                    return 'Alredy done';
+                    console.log('Already done');
+                    return 'Already done';
                 }
             } catch(e) {
                 console.error(e, "Finding element failed: " + elemPathsAlreadyDone);

@@ -9,7 +9,8 @@ exports.PAUSE = {
     BEFORE_UNSUBSCRIBE: 3000,
     MAXWAIT_FOR_PROTECT: 100000,
     WAIT_FOR_LOGIN: 100000,
-    NO_TASKS:60000
+    NO_TASKS:60000,
+    RECONNECTING: 10000
 };
 
 exports.chrome_options = {
