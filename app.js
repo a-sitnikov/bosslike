@@ -34,6 +34,9 @@ function connectBrowser() {
     options.addArguments('user-data-dir=' + profile);
     options.addArguments('disable-infobars');
     options.addArguments('no-pings');
+    
+    //headless
+    // dosen't work on Chrome 61, Cromedriver 2.31
     //options.addArguments('headless');
     //options.addArguments('disable-gpu');
     //options.addArguments('remote-debugging-port=9222');
