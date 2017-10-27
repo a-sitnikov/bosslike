@@ -4,9 +4,8 @@ const config    = require("./config");
 const InstagramClicker = require("./instagramclicker");
 const YoutubeClicker = require("./youtubeclicker");
 
-const By    = webdriver.By;
-const until = webdriver.until;
-const Key   = webdriver.Key;
+const { By, until, Key } = webdriver;
+const { log, error } = config;
 
 module.exports = class Bosslike {
     
@@ -43,7 +42,7 @@ module.exports = class Bosslike {
             await this.driver.get(`http://bosslike.ru/tasks/instagram/${type}/`);
             return true;
         } catch(e) {
-            console.error(e, "");  
+            error(e, "");  
             return false;            
         }   
     }
@@ -55,7 +54,7 @@ module.exports = class Bosslike {
             await this.driver.get(`http://bosslike.ru/tasks/youtube/${type}/`);
             return true;
         } catch(e) {
-            console.error(e, "");  
+            error(e, "");  
             return false;            
         }   
     }
@@ -100,14 +99,14 @@ module.exports = class Bosslike {
             
             /*
             if (config.isBlocked(text)) {
-                console.log("Blocked title: " + text);
+                log("Blocked title: " + text);
                 continue;
             }
             */
 
             this.socialClicker.setAction(text);
             if (!this.socialClicker.action) {
-                console.log(text + ', unsupported');
+                log(text + ', unsupported');
                 continue;
             }    
 
@@ -118,7 +117,7 @@ module.exports = class Bosslike {
             }
         }
 
-        console.log('No tasks');
+        log('No tasks');
         await config.sleep(config.PAUSE.NO_TASKS);
         return result;
 
@@ -133,7 +132,7 @@ module.exports = class Bosslike {
                     await this.driver.switchTo().window(handle);
                     return true;
                 } catch (e) {
-                    console.error(e, "");
+                    error(e, "");
                 }
             }
         }
@@ -148,7 +147,7 @@ module.exports = class Bosslike {
             try {
                 await this.driver.close();        
             } catch(e) {
-                console.error(e, "Failed to close task window");    
+                error(e, "Failed to close task window");    
             }    
         }   
         
@@ -163,9 +162,9 @@ module.exports = class Bosslike {
                 await this.waitForTaskToBeChecked();
                 await config.scrollTo(this.driver, link);
                 await link.click();
-                console.log("Hide task: " + taskId);
+                log("Hide task: " + taskId);
             } catch(e) {
-                console.error(e, "Can't hide task: " + taskId);
+                error(e, "Can't hide task: " + taskId);
             }    
         }
 
@@ -175,8 +174,8 @@ module.exports = class Bosslike {
         
         let subElems = await taskElem.findElements(By.xpath('.//button'));
         if (subElems.length === 0) {
-            console.log(text, subElems);
-            console.log('Не найдено кнопки');
+            log(text, subElems);
+            log('Не найдено кнопки');
             return false;
         }
 
@@ -193,7 +192,7 @@ module.exports = class Bosslike {
             let date = new Date(taskParams.date*1000);
             let mins = 10 * 60 * 1000;
             if (now - date < mins) {
-                console.log('' + taskId + ', ' + text + ', skipped. Time left: ' + (mins/1000 - Math.round((now - date) /1000)));
+                log('' + taskId + ', ' + text + ', skipped. Time left: ' + (mins/1000 - Math.round((now - date) /1000)));
                 //await this.hideTask(taskId, taskElem);
                 config.sleep(500);
                 return false;
@@ -209,7 +208,7 @@ module.exports = class Bosslike {
             try {
                 await button.click();
             } catch(e) {
-                console.error(e, "Failed to click task button");
+                error(e, "Failed to click task button");
                 result = false;
             }   
         }
@@ -232,14 +231,14 @@ module.exports = class Bosslike {
                         try {
                             await bntComment.click();
                         } catch(e) {
-                            console.error(e, "Can't click Comment button");
+                            error(e, "Can't click Comment button");
                         }  
                     } else {
-                        console.log('No button: Оставить комментарий');
+                        log('No button: Оставить комментарий');
                         result = false;
                     }
                 } else {
-                    console.log("No comment: " + taskId);
+                    log("No comment: " + taskId);
                     result = false;
                 }     
             }
@@ -248,12 +247,12 @@ module.exports = class Bosslike {
         if (result) {
             await config.sleep(config.PAUSE.AFTER_TASK_CLICK);
             
-            console.log("" + taskId + ", " + text + ', ' + comment);
+            log("" + taskId + ", " + text + ', ' + comment);
 
             let isSwithed = await this.swithToTaskWindow();
 
             if (!isSwithed) {
-                console.log("Can't switch window");
+                log("Can't switch window");
                 await config.sleep(config.PAUSE.AFTER_FALSE_TASK);
                 result = false;
             } else 
@@ -266,7 +265,7 @@ module.exports = class Bosslike {
         try {
             await this.driver.switchTo().window(this.mainWindow);
         } catch(e) {
-            console.error(e, "Can't switch to main window");
+            error(e, "Can't switch to main window");
         }  
 
         if (result === true || result === 'OK' || result === 'Already done') {
@@ -279,9 +278,9 @@ module.exports = class Bosslike {
 
             let elems = await taskElem.findElements(By.xpath('.//*[contains(text(),"ВЫПОЛНЕНО")]'));
             if (elems && elems.length !== 0)
-                console.log('Status: complete');
+                log('Status: complete');
             else    
-                console.log('Status: not complete');
+                log('Status: not complete');
 
             if (this.socialClicker.action === 'subscribe') {
                 //await config.sleep(config.PAUSE.BEFORE_UNSUBSCRIBE);
@@ -302,7 +301,7 @@ module.exports = class Bosslike {
         //if (this.socialClicker.url.search(/akterka.ru/ !== -1)) return;
 
         await this.driver.executeScript(`window.open()`);
-        console.log('unsubscribe: ' + this.socialClicker.url);
+        log('unsubscribe: ' + this.socialClicker.url);
 
         let isSwithed = await this.swithToTaskWindow();
         if (isSwithed) {
@@ -336,12 +335,12 @@ module.exports = class Bosslike {
             try {
                 let comment = await elems[0].getAttribute("value");
                 if (config.isBlocked(comment)) {
-                    console.log(`Blocked comment: ${comment}`);
+                    log(`Blocked comment: ${comment}`);
                     return '';
                 } else    
                     return comment;
             } catch(e) {
-                console.error(e, "Can't get comment");
+                error(e, "Can't get comment");
                 return '';
             }    
         }

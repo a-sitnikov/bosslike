@@ -2,28 +2,16 @@
 const dateFormat = require('dateformat');
 const webdriver = require("selenium-webdriver");
 const chrome    = require("selenium-webdriver/chrome");
-const argv      = require('minimist')(process.argv.slice(2));
 
 const Bosslike = require("./bosslike");
 const config   = require("./config");
 const DBLog    = require('./dblog');
 
 const sqlite3 = require('sqlite3').verbose();
-const fs = require('fs');
 
-let profile = argv.profile;
-let count = parseInt(argv.count || 0);
-let social = argv.social || 'instagram';
+const {log, error, accName, dbname, profile, social, count} = config;
 
-let arr = profile.split(new RegExp('\\\\|\\/', 'g'));
-let accName = arr[arr.length - 1];
-let dbname = `${accName}.sqlite3`;
-
-let logFile = fs.createWriteStream(`${__dirname}/logs/${accName}.log`, {flags : 'w'});
-console.log = config.customLog(logFile);
-console.error = config.customError(logFile);
-
-console.log(dbname);
+log(dbname);
 const db = new sqlite3.Database(`logs/${dbname}`);
 
 function connectBrowser() {
@@ -34,11 +22,13 @@ function connectBrowser() {
     options.addArguments('user-data-dir=' + profile);
     options.addArguments('disable-infobars');
     options.addArguments('no-pings');
+    options.addArguments('window-size=1000,825');
     
     //headless
     // dosen't work on Chrome 61, Cromedriver 2.31
     //options.addArguments('headless');
     //options.addArguments('disable-gpu');
+    //options.addArguments('disable-plugins');
     //options.addArguments('remote-debugging-port=9222');
 
 
@@ -61,16 +51,16 @@ async function run() {
 
     bosslike.open(social, 'all');     
     if (!await bosslike.waitForLogin()) {
-        console.error(e, "Login not perfomed");
+        error(e, "Login not perfomed");
         return;
     } 
 
     for (let i = 0; i < count; i++) {
         
         if (i % 5 === 0) {
-            console.log("\x1b[33m" + i, dateFormat(new Date, 'HH:MM:ss, dd.mm.yy'), "\x1b[39m");
+            log("\x1b[33m" + i, dateFormat(new Date, 'HH:MM:ss, dd.mm.yy'), "\x1b[39m");
         } else {
-            console.log("\x1b[33m" + i, "\x1b[39m");
+            log("\x1b[33m" + i, "\x1b[39m");
         }
 
         let taskType = bosslike.getTaskType(i);
@@ -80,9 +70,9 @@ async function run() {
             try {
                 bosslike.driver.quit();
             } catch (e) {
-                console.error(e, "quit");               
+                error(e, "quit");               
             }    
-            console.log("Reconnecting to browser");
+            log("Reconnecting to browser");
             bosslike.driver = connectBrowser();
             await config.sleep(config.PAUSE.RECONNECTING);
             continue;
@@ -93,7 +83,7 @@ async function run() {
             let title = accName + ' (' + (count-i) + ')';
             await bosslike.driver.executeScript(`window.document.title = "${title}"`);
         } catch(e){
-            console.error(e, "");
+            error(e, "");
         }
         
         if (!await bosslike.waitForTasksToBeLoaded()) continue;
@@ -101,7 +91,7 @@ async function run() {
         try {
             await bosslike.getTasksAndCompleteFirst();
         } catch(e) {
-            console.error(e, "Can't copmlete task");
+            error(e, "Can't copmlete task");
         }      
         await config.sleep(config.PAUSE.AFTER_TASK_COMPLETE);
     }   
@@ -109,7 +99,7 @@ async function run() {
     dbLog.close();
     if (count > 0) {
         bosslike.driver.quit();
-        console.log('Complete');
+        log('Complete');
     }
 
 };

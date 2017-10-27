@@ -6,6 +6,8 @@ const webdriver = require("selenium-webdriver");
 let By = webdriver.By;
 let until = webdriver.until;
 
+const {log, error} = config;
+
 module.exports = class YoutubeClicker {
     
     constructor(driver, mainWindow) {
@@ -72,7 +74,7 @@ module.exports = class YoutubeClicker {
                 let elems = await driver.findElements(dialogXPath);
                 return elems.length !== 0;
             } catch(e) {
-                console.error(e, "");
+                error(e, "");
                 return false;
             } 
         });
@@ -80,7 +82,7 @@ module.exports = class YoutubeClicker {
         try { 
             await this.driver.wait(condition, 10000);
         } catch(e) {
-            console.error(e, "Waiting for confirm dialog failed");
+            error(e, "Waiting for confirm dialog failed");
             return false;
         }
 
@@ -88,7 +90,7 @@ module.exports = class YoutubeClicker {
         try {
             dialog = await driver.findElement(dialogXPath);
         } catch(e){
-            console.error(e, "");
+            error(e, "");
             return false;
         }
 
@@ -114,7 +116,7 @@ module.exports = class YoutubeClicker {
                 return "Page doesn't availibale";
             }
         } catch(e) {
-            console.error(e, "Finding element failed");
+            error(e, "Finding element failed");
         }   
 
         if (elemPathsAlreadyDone.length > 0){
@@ -125,7 +127,7 @@ module.exports = class YoutubeClicker {
                     return 'Already done';
                 }
             } catch(e) {
-                console.error(e, "Finding element failed: " + elemPathsAlreadyDone);
+                error(e, "Finding element failed: " + elemPathsAlreadyDone);
             }  
         } 
 
@@ -136,7 +138,7 @@ module.exports = class YoutubeClicker {
                 currElem = elems[0];
             }
         } catch(e) {
-            console.error(e, "Finding element failed: " + elemPaths);
+            error(e, "Finding element failed: " + elemPaths);
         }  
         
         let result = null;
@@ -146,7 +148,7 @@ module.exports = class YoutubeClicker {
                 let loc = await currElem.getLocation();
                 await this.driver.executeScript('return window.scrollTo(' + (loc.x - 350) + ',' + (loc.y - 350) + ');');
             } catch(e) {
-                console.error(e, "Failed to scroll to Like button");
+                error(e, "Failed to scroll to Like button");
             }    
         
             try {
@@ -163,7 +165,7 @@ module.exports = class YoutubeClicker {
                 await config.sleep(pause);
             } catch(e) {
                 result = 'Failed to click button';
-                console.error(e, 'Failed to click button');
+                error(e, 'Failed to click button');
             }   
 
         } else {
@@ -220,7 +222,7 @@ module.exports = class YoutubeClicker {
                     try {
                         result.element.click();
                     } catch(e) {
-                        console.error(e, "Failed to activate comment area");
+                        error(e, "Failed to activate comment area");
                     }
                 }
             }

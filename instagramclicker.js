@@ -3,8 +3,8 @@
 const config = require('./config');
 const webdriver = require("selenium-webdriver");
 
-let By = webdriver.By;
-let until = webdriver.until;
+const { By, until, Key } = webdriver;
+const { log, error } = config;
 
 module.exports = class InstagramClicker {
     
@@ -12,6 +12,7 @@ module.exports = class InstagramClicker {
         this.driver = driver;
         this.mainWindow = mainWindow;
         this.taskTypes = ['all', 'like', 'subscribe', 'comment'];
+        //this.taskTypes = ['comment'];
 
         this.paths = {
             like: {
@@ -51,7 +52,7 @@ module.exports = class InstagramClicker {
                 let elems = await _this.driver.findElements(By.xpath('//span[contains(text(), "Instagram")] | //span[contains(text(), "INSTAGRAM")]'));
                 return elems && elems.length !== 0;
             } catch(e) {
-                console.error(e, "");
+                error(e, "");
                 return false;
             }    
         });
@@ -60,7 +61,7 @@ module.exports = class InstagramClicker {
             await this.driver.wait(condition, 5000);
             return true;
         } catch(e) {
-            console.error(e, "Waiting span Instagram failed");
+            error(e, "Waiting span Instagram failed");
             return false;
         }    
     }
@@ -90,22 +91,22 @@ module.exports = class InstagramClicker {
         try {
             elems = await this.driver.findElements(By.xpath('//*[contains(text(), "Sorry, this page")]'));
             if (elems && elems.length > 0) {
-                console.log("Sorry, this page isn't available");
+                log("Sorry, this page isn't available");
                 return false;
             }
         } catch(e) {
-            console.error(e, "Finding element failed");
+            error(e, "Finding element failed");
         }   
 
         if (elemPathsAlreadyDone.length > 0){
             try {
                 elems = await this.driver.findElements(By.xpath(elemPathsAlreadyDone.join(' | ')));
                 if (elems && elems.length > 0) {
-                    console.log('Already done');
+                    log('Already done');
                     return 'Already done';
                 }
             } catch(e) {
-                console.error(e, "Finding element failed: " + elemPathsAlreadyDone);
+                error(e, "Finding element failed: " + elemPathsAlreadyDone);
             }  
         } 
 
@@ -116,7 +117,7 @@ module.exports = class InstagramClicker {
                 currElem = elems[0];
             }
         } catch(e) {
-            console.error(e, "Finding element failed: " + elemPaths);
+            error(e, "Finding element failed: " + elemPaths);
         }  
         
         let result = null;
@@ -126,21 +127,21 @@ module.exports = class InstagramClicker {
         
             try {
                 if (this.action === 'comment') {
-                    await currElem.sendKeys(comment);
-                    await currElem.submit();
+                    await currElem.sendKeys(comment + Key.ENTER);
                 } else {
                     await currElem.click();
                 }    
                 result = 'OK';
-                console.log('Done');
+                log('Done');
                 await config.sleep(config.PAUSE.AFTER_JOIN_CLICK);
             } catch(e) {
                 result = false;
-                console.error(e, 'Failed to click Like button');
+                error(e, 'Failed to click Like button');
+                await config.sleep(10000);
             }   
 
         } else {
-            console.log('no element');
+            log('no element');
             result = false;
         }
     
@@ -161,17 +162,17 @@ module.exports = class InstagramClicker {
     async doAction(comment) {
 
         if (await this.windowClosed()) {
-            console.log("Window already closed");
+            log("Window already closed");
             return false;
         }
 
         if (!this.waitForPageToBeEnabled()) {
-            console.log("Waiting for page failed");
+            log("Waiting for page failed");
             return false;
         }    
 
         if (await this.windowClosed()) {
-            console.log("Window already closed");
+            log("Window already closed");
             return false;
         }
         

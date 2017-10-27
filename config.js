@@ -1,5 +1,21 @@
 "use strict";
 const webdriver = require("selenium-webdriver");
+const argv      = require('minimist')(process.argv.slice(2));
+
+const fs = require('fs');
+
+const profile = argv.profile;
+
+const arr = profile.split(new RegExp('\\\\|\\/', 'g'));
+const accName = arr[arr.length - 1];
+
+exports.accName = accName;
+exports.dbname  = `${accName}.sqlite3`;
+exports.profile = profile;
+exports.count = parseInt(argv.count || 0);
+exports.social = argv.social || 'instagram';
+
+const logFile = fs.createWriteStream(`${__dirname}/logs/${accName}.log`, {flags : 'w'});
 
 exports.PAUSE = {
     AFTER_TASK_CLICK: 1000,
@@ -37,28 +53,24 @@ exports.isBlocked = function(text) {
     return false;
 }
 
-exports.customLog = function(logFile) {
+exports.log = function(...data) {
 
-    return function(...data) {
-        
-        let str = data.join(' ') + '\n';
-        logFile.write(str.replace("\x1b[33m", "").replace("\x1b[35m", "").replace("\x1b[39m", ""));
-        process.stdout.write(str);
-    }
+    let str = data.join(' ');
+    logFile.write(str.replace("\x1b[33m", "").replace("\x1b[35m", "").replace("\x1b[39m", "") + '\n');
+    console.log(str);
+
 }
 
-exports.customError = function(logFile) {
+exports.error = function(e, message) {
 
-    return function(e, message) {
-        
-        if (message) {
-            process.stdout.write(message + '\n');
-            logFile.write(message + '\n');
-        }    
+    if (message) {
+        console.log(message);
+        logFile.write(message + '\n');
+    }    
 
-        process.stdout.write("\x1b[35m" + e.message + "\x1b[39m" + "\n");
-        logFile.write(e.message + '\n');
-    }
+    console.log("\x1b[35m" + e.message + "\x1b[39m");
+    logFile.write(e.message + '\n');
+    
 }
 
 exports.waitFor = async function (driver, parent, byXPath, exist, time, comment) {
