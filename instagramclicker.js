@@ -16,13 +16,13 @@ module.exports = class InstagramClicker {
 
         this.paths = {
             like: {
-                paths:       ['//span[text()="Like"]'],
-                alreadyDone: ['//span[text()="Unlike"]']
+                paths:       ['//span[text()="Like"]', '//span[text()="Нравится"]'],
+                alreadyDone: ['//span[text()="Unlike"]', '//span[text()="Не нравится"]']
             },
 
             subscribe: {
-                paths:       ['//button[text()="Follow"]'],
-                alreadyDone: ['//button[text()="Following"]']
+                paths:       ['//button[text()="Follow"]', '//button[text()="Подписаться"]'],
+                alreadyDone: ['//button[text()="Following"]', '//button[text()="Подписки"]']
             },
             comment: {
                 paths: [

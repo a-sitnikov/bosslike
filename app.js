@@ -106,7 +106,9 @@ async function run() {
         await config.sleep(config.PAUSE.AFTER_TASK_COMPLETE);
     }   
 
-    dbLog.close();
+    if (dbLog)
+        dbLog.close();
+        
     if (count > 0) {
         bosslike.driver.quit();
         log('Complete');

@@ -274,7 +274,7 @@ module.exports = class Bosslike {
         if (result === true || result === 'OK' || result === 'Already done') {
 
             await config.waitFor(this.driver, taskElem,
-                By.xpath('.//*[contains(text(),"Проверка")]'),
+                By.xpath('.//*[contains(text(),"Провер")]'),
                 false, 50000,
                 "Waiting for check failed"
             );
