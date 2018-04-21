@@ -1,6 +1,6 @@
 {
   "name": "bosslike",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "scripts": {},
   "devDependencies": {},
@@ -8,8 +8,7 @@
     "chromedriver": "^2.38.0",
     "dateformat": "^2.2.0",
     "minimist": "^1.2.0",
-    "selenium-webdriver": "^3.6.0",
-    "sqlite3": "^3.1.13"
+    "selenium-webdriver": "^4.0.0-alpha.1"
   },
   "main": "app.js",
   "repository": {

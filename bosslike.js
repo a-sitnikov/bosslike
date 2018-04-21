@@ -67,9 +67,9 @@ module.exports = class Bosslike {
     }
 
      async waitForLogin() {
-
+        //console.log('waiting for login')l
         return (await config.waitFor(this.driver, this.driver, 
-            By.xpath('//a[@class="navbar-brand"]'), 
+            By.xpath('//a[contains(@class,"navbar-brand")]'), 
             true, config.PAUSE.WAIT_FOR_LOGIN, "")).ok;
     }
     
@@ -89,7 +89,7 @@ module.exports = class Bosslike {
 
     async getTasksAndCompleteFirst() {
         
-        let elements = await this.driver.findElements(By.xpath("//div[contains(@class, 'task_item')]"));
+        let elements = await this.driver.findElements(By.xpath("//article[contains(@class, 'task_item')]"));
         let elem = null;
         let result = false;
         for (let elem of elements) {
@@ -172,7 +172,7 @@ module.exports = class Bosslike {
 
     async clickTask(taskElem, text) {
         
-        let subElems = await taskElem.findElements(By.xpath('.//button'));
+        let subElems = await taskElem.findElements(By.xpath('.//a[contains(@class, "btn-primary")]'));
         if (subElems.length === 0) {
             log(text, subElems);
             log('Не найдено кнопки');
@@ -186,7 +186,10 @@ module.exports = class Bosslike {
         
         let taskId = await button.getAttribute('data-task-id');
 
-        let taskParams = await this.dbLog.getTaskParams(taskId);
+        let taskParams;
+        if (this.dbLog)
+            taskParams = await this.dbLog.getTaskParams(taskId);
+            
         if (taskParams) {
             let now = new Date;
             let date = new Date(taskParams.date*1000);

@@ -1,24 +1,24 @@
 "use strict";
+require('chromedriver');
 const dateFormat = require('dateformat');
 const webdriver = require("selenium-webdriver");
 const chrome    = require("selenium-webdriver/chrome");
-require('chromedriver');
 
 const Bosslike = require("./bosslike");
 const config   = require("./config");
 const DBLog    = require('./dblog');
 
-const sqlite3 = require('sqlite3').verbose();
+//const sqlite3 = require('sqlite3').verbose();
 
 const {log, error, accName, dbname, profile, social, count} = config;
 
 log(dbname);
-const db = new sqlite3.Database(`logs/${dbname}`);
+//const db = new sqlite3.Database(`logs/${dbname}`);
 
 function connectBrowser() {
-    
+
     let options = new chrome.Options();
-    
+  
     options.setChromeBinaryPath(config.chrome_options.binaryPath);
     options.addArguments('user-data-dir=' + profile);
     options.addArguments('disable-infobars');
@@ -33,13 +33,20 @@ function connectBrowser() {
     //options.addArguments('remote-debugging-port=9222');
 
 
+    let capabilities  = new webdriver.Capabilities(webdriver.Capabilities.chrome());        
+    capabilities.set('TIMEOUTS', {
+        implicit: 1500,
+        pageLoad: 40*1000
+    });
+    
+
     let driver = new webdriver.Builder()
-        .forBrowser('chrome')
         .setChromeOptions(options)
+        .withCapabilities(capabilities)
         .build();
 
-    driver.manage().timeouts().implicitlyWait(1500); 
-    driver.manage().timeouts().pageLoadTimeout(40*1000);
+ //   driver.manage().timeouts().implicitlyWait(1500); 
+//    driver.manage().timeouts().pageLoadTimeout(40*1000);
 
     return driver;    
 }
@@ -47,11 +54,13 @@ function connectBrowser() {
 async function run() {
     
     let driver = connectBrowser();
-    let dbLog = new DBLog(db);
+    let dbLog;// = new DBLog(db);
     let bosslike = new Bosslike(driver, dbLog);
 
     bosslike.open(social, 'all');     
-    if (!await bosslike.waitForLogin()) {
+    try {
+        await bosslike.waitForLogin();
+    } catch(e) {    
         error(e, "Login not perfomed");
         return;
     } 

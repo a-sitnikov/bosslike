@@ -101,7 +101,7 @@ exports.scrollTo = async function(driver, elem, offset) {
     offset = offset || 350;
 
     try {
-        let loc = await elem.getLocation();
+        let loc = await elem.getRect();
         await driver.executeScript('return window.scrollTo(' + (loc.x) + ',' + (loc.y - offset) + ');');        
     } catch(e) {
         console.error(e, "Can't scroll to elem");

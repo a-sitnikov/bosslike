@@ -2,7 +2,7 @@
 /node_modules
 
 # IDEs and editors
-/.vscode
+#/.vscode
 /.idea
 
 test.js

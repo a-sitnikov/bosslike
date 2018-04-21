@@ -11,7 +11,7 @@ module.exports = class InstagramClicker {
     constructor(driver, mainWindow) {
         this.driver = driver;
         this.mainWindow = mainWindow;
-        this.taskTypes = ['all', 'like', 'subscribe', 'comment'];
+        this.taskTypes = ['like', 'subscribe'];
         //this.taskTypes = ['comment'];
 
         this.paths = {
@@ -46,22 +46,11 @@ module.exports = class InstagramClicker {
     
     async waitForInstagramPageLoaded() {
         
-        let _this = this;
-        let condition = new webdriver.Condition('', async function (webdriver) {
-            try {
-                let elems = await _this.driver.findElements(By.xpath('//span[contains(text(), "Instagram")] | //span[contains(text(), "INSTAGRAM")]'));
-                return elems && elems.length !== 0;
-            } catch(e) {
-                error(e, "");
-                return false;
-            }    
-        });
-
         try {
-            await this.driver.wait(condition, 5000);
+            await config.waitFor(this.driver, this.driver, By.xpath('//span[@id="react-root"]'), true, 50000);
             return true;
         } catch(e) {
-            error(e, "Waiting span Instagram failed");
+            error(e, "Waiting for Instagram span failed");
             return false;
         }    
     }
@@ -171,13 +160,21 @@ module.exports = class InstagramClicker {
             return false;
         }    
 
+        try {
+            await config.waitFor(this.driver, this.driver, By.xpath('//span[@id="react-root"]'), true, 50000);
+        } catch(e) {
+            error(e, "Instagram didn't load");
+            return false;
+        }   
+
         if (await this.windowClosed()) {
             log("Window already closed");
             return false;
         }
         
         //span[contains(text(), "Instagram")]
-        //this.waitForInstagramPageLoaded();
+        if (!this.waitForInstagramPageLoaded())
+            return false;
 
         this.url = await this.driver.getCurrentUrl();
         let elemPaths            = this.paths[this.action].paths;
