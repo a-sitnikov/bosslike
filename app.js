@@ -2,6 +2,7 @@
 const dateFormat = require('dateformat');
 const webdriver = require("selenium-webdriver");
 const chrome    = require("selenium-webdriver/chrome");
+require('chromedriver');
 
 const Bosslike = require("./bosslike");
 const config   = require("./config");
