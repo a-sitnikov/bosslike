@@ -6,4 +6,5 @@
 /.idea
 
 test.js
+debug.log
 /logs

@@ -274,12 +274,23 @@ module.exports = class Bosslike {
         if (result === true || result === 'OK' || result === 'Already done') {
 
             await config.waitFor(this.driver, taskElem,
-                By.xpath('.//*[contains(text(),"Провер")]'),
+                By.xpath('.//*[contains(text(),"Проверка")]'),
                 false, 50000,
                 "Waiting for check failed"
             );
+            
+            let elems = await taskElem.findElements(By.xpath('.//*[contains(text(),"Проверить")]'));
+            if (elems && elems.length !== 0) {
+                elems[0].click();
 
-            let elems = await taskElem.findElements(By.xpath('.//*[contains(text(),"ВЫПОЛНЕНО")]'));
+                await config.waitFor(this.driver, taskElem,
+                    By.xpath('.//*[contains(text(),"Проверка")]'),
+                    false, 50000,
+                    "Waiting for check failed"
+                );
+            }
+
+            elems = await taskElem.findElements(By.xpath('.//*[contains(text(),"ВЫПОЛНЕНО")]'));
             if (elems && elems.length !== 0)
                 log('Status: complete');
             else    

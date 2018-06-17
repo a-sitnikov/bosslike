@@ -18,7 +18,6 @@ log(dbname);
 function connectBrowser() {
 
     let options = new chrome.Options();
-  
     options.setChromeBinaryPath(config.chrome_options.binaryPath);
     options.addArguments('user-data-dir=' + profile);
     options.addArguments('disable-infobars');
