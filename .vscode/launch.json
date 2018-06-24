@@ -10,8 +10,8 @@
             "name": "Launch Program",
             "program": "${workspaceFolder}\\app.js",
             "args": [
-                "--profile=E:/profiles/11.bazarowser@yandex.ru",
-                //"--profile=E:/profiles/09.bazanov.kolya2017@ya",
+                //"--profile=E:/profiles/11.bazarowser@yandex.ru",
+                "--profile=E:/profiles/09.bazanov.kolya2017@ya",
                 "--count=300"
             ]
         }
