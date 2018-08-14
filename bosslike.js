@@ -32,14 +32,14 @@ module.exports = class Bosslike {
     
     async openVK(type) {
         this.social = 'vk';
-        await this.driver.get(`http://bosslike.ru/tasks/vkontakte/${type}/`);
+        await this.driver.get(`https://bosslike.ru/tasks/vkontakte/${type}/`);
     }
 
     async openInstagram(type) {
         this.social = 'instagram';
         this.socialClicker = new InstagramClicker(this.driver, this.mainWindow);
         try{
-            await this.driver.get(`http://bosslike.ru/tasks/instagram/${type}/`);
+            await this.driver.get(`https://bosslike.ru/tasks/instagram/${type}/`);
             return true;
         } catch(e) {
             error(e, "");  
@@ -51,7 +51,7 @@ module.exports = class Bosslike {
         this.social = 'youtube';
         this.socialClicker = new YoutubeClicker(this.driver, this.mainWindow);
         try{
-            await this.driver.get(`http://bosslike.ru/tasks/youtube/${type}/`);
+            await this.driver.get(`https://bosslike.ru/tasks/youtube/${type}/`);
             return true;
         } catch(e) {
             error(e, "");  

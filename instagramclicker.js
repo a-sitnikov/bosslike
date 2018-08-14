@@ -16,8 +16,8 @@ module.exports = class InstagramClicker {
 
         this.paths = {
             like: {
-                paths:       ['//span[text()="Like"]', '//span[text()="Нравится"]'],
-                alreadyDone: ['//span[text()="Unlike"]', '//span[text()="Не нравится"]']
+                paths:       ['//span[text()="Like"]', '//span[@aria-label="Like"]', '//span[text()="Нравится"]'],
+                alreadyDone: ['//span[text()="Unlike"]', '//span[@aria-label="Unlike"]', '//span[text()="Не нравится"]']
             },
 
             subscribe: {
